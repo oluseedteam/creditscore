@@ -3,14 +3,14 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/auth/LoginPage'
 import SignupPage from './pages/auth/SignupPage'
-// import DashboardPage from './pages/participant/DashboardPage'
-// import CreditScorePage from './pages/participant/CreditScorePage'
-// import ClassProgressPage from './pages/participant/ClassProgressPage'
-// import LoanGatewayPage from './pages/participant/LoanGatewayPage'
-// import AdminDashboard from './pages/admin/AdminDashboard'
-// import AdminParticipantDetail from './pages/admin/AdminParticipantDetail'
-// import ParticipantLayout from './components/layout/ParticipantLayout'
-// import AdminLayout from './components/layout/AdminLayout'
+import DashboardPage from './pages/participant/DashboardPage'
+import CreditScorePage from './pages/participant/CreditScorePage'
+import ClassProgressPage from './pages/participant/ClassProgressPage'
+import LoanGatewayPage from './pages/participant/LoanGatewayPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminParticipantDetail from './pages/admin/AdminParticipantDetail'
+import ParticipantLayout from './components/layout/ParticipantLayout'
+import AdminLayout from './components/layout/AdminLayout'
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, loading } = useAuth()
@@ -29,7 +29,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
-          {/* <Route path="/" element={<PrivateRoute requiredRole="participant"><ParticipantLayout /></PrivateRoute>}>
+          <Route path="/" element={<PrivateRoute requiredRole="participant"><ParticipantLayout /></PrivateRoute>}>
             <Route path="dashboard"      element={<DashboardPage />} />
             <Route path="credit-score"   element={<CreditScorePage />} />
             <Route path="class-progress" element={<ClassProgressPage />} />
@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/admin" element={<PrivateRoute requiredRole="admin"><AdminLayout /></PrivateRoute>}>
             <Route index element={<AdminDashboard />} />
             <Route path="participant/:id" element={<AdminParticipantDetail />} />
-          </Route> */}
+          </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
