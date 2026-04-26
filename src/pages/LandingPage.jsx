@@ -259,7 +259,7 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer className="border-t py-8" style={{borderColor:'#E3E6EC'}}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs" style={{color:'#6B7280'}}>© 2025 MyScoreNova by Tina Patton Consulting. Credit & Class Management.</p>
+          <p className="text-xs" style={{color:'#6B7280'}}>© 2026</p>
         </div>
       </footer>
     </div>
