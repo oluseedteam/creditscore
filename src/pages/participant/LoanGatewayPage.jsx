@@ -2,20 +2,20 @@ import { Link } from 'react-router-dom'
 import { Lock, Unlock, Phone, ShieldCheck, Zap, UserCheck, BarChart3, ArrowRight, MessageSquare, TrendingUp } from 'lucide-react'
 import { useAuth, getStatusFromScore } from '../../context/AuthContext'
 
-// Color Constants from CreditScorePage
+// Color Constants
 const NAVY = '#102A43', PGREEN = '#2FBF71', GOLD = '#F4B000', CORAL = '#F56A6A', TEAL = '#066A6F'
 
 const loanOfficers = [
   { name: 'Patricia Owens', title: 'Senior Loan Officer', specialty: 'FHA & First-time buyers', initials: 'PO', available: true },
-  { name: 'Marcus Webb',    title: 'Mortgage Consultant',  specialty: 'Conventional & Jumbo',    initials: 'MW', available: true },
-  { name: 'Diana Foster',   title: 'USDA Loan Specialist', specialty: 'Rural & USDA programs',   initials: 'DF', available: false },
+  { name: 'Marcus Webb',    title: 'Mortgage Consultant',  specialty: 'Conventional & Jumbo',     initials: 'MW', available: true },
+  { name: 'Diana Foster',   title: 'USDA Loan Specialist', specialty: 'Rural & USDA programs',    initials: 'DF', available: false },
 ]
 
 const loanTypes = [
-  { name: 'FHA Loan',      minScore: 580, downPct: '3.5%', best: 'First-time buyers' },
-  { name: 'Conventional',  minScore: 620, downPct: '3–20%', best: 'Strong credit' },
-  { name: 'USDA Loan',     minScore: 640, downPct: '0%',    best: 'Rural properties' },
-  { name: 'VA Loan',       minScore: 580, downPct: '0%',    best: 'Veterans / military' },
+  { name: 'FHA Loan',       minScore: 580, downPct: '3.5%', best: 'First-time buyers' },
+  { name: 'Conventional',   minScore: 620, downPct: '3–20%', best: 'Strong credit' },
+  { name: 'USDA Loan',      minScore: 640, downPct: '0%',    best: 'Rural properties' },
+  { name: 'VA Loan',        minScore: 580, downPct: '0%',    best: 'Veterans / military' },
 ]
 
 export default function LoanGatewayPage() {
@@ -55,7 +55,7 @@ export default function LoanGatewayPage() {
           {/* Visual Lock/Unlock Indicator */}
           <div className={`lg:col-span-4 p-12 flex flex-col items-center justify-center text-center ${isUnlocked ? 'bg-emerald-50/50' : 'bg-white/5'}`}>
             <div className={`w-28 h-28 rounded-3xl flex items-center justify-center shadow-2xl transition-all duration-700 ${isUnlocked ? 'text-white' : 'text-amber-400 font-black italic'}`} 
-                 style={{ background: isUnlocked ? PGREEN : 'transparent', border: isUnlocked ? 'none' : `2px dashed ${GOLD}` }}>
+                   style={{ background: isUnlocked ? PGREEN : 'transparent', border: isUnlocked ? 'none' : `2px dashed ${GOLD}` }}>
               {isUnlocked ? <Unlock size={48} /> : <Lock size={48} />}
             </div>
             <div className="mt-6">

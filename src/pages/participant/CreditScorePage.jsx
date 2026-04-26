@@ -21,7 +21,7 @@ const coaching = {
   yellow:[
     {title:'Lower your utilization', body:'Aim to use less than 30% of each credit card limit. Below 10% is ideal for maximum score gains.'},
     {title:'Become an authorized user',body:'Ask a family member with great credit to add you as an authorized user. Their history boosts yours.'},
-    {title:'Set up auto-pay',         body:'Never miss another payment. A single 30-day late mark can drop your score 80–110 pts.'},
+    {title:'Set up auto-pay',          body:'Never miss another payment. A single 30-day late mark can drop your score 80–110 pts.'},
   ],
   green:[
     {title:'Maintain low utilization', body:"You're in great shape — keep utilization below 10% and monitor for any new derogatory marks."},
@@ -58,7 +58,6 @@ export default function CreditScorePage() {
     score: h.score,
   }))
 
-  // Score change per month (bar chart)
   const deltaData = history.slice(1).map((h,i)=>({
     month: format(new Date(h.month+'-01'),'MMM yy'),
     change: h.score - history[i].score,
@@ -78,7 +77,7 @@ export default function CreditScorePage() {
     <div className="p-6 lg:p-10 max-w-5xl">
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>Credit Score</h1>
-        <p style={{color:'#6B7280'}}>Track your monthly progress and unlock AI coaching guidance.</p>
+        <p style={{color:'#6B7280'}}>Track your monthly progress and access strategic coaching insights.</p>
       </div>
 
       {/* Entry + current standing */}
@@ -151,7 +150,6 @@ export default function CreditScorePage() {
       {/* Charts row */}
       {chartData.length >= 2 && (
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* Area chart */}
           <div className="chart-card">
             <p className="chart-title">Score over time</p>
             <p className="chart-sub">Monthly credit score — dashed line = 670 Good threshold</p>
@@ -174,11 +172,10 @@ export default function CreditScorePage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Monthly change bar chart */}
           {deltaData.length >= 1 && (
             <div className="chart-card">
               <p className="chart-title">Monthly point changes</p>
-              <p className="chart-sub">How many points you gained or lost each month</p>
+              <p className="chart-sub">Point fluctuations across the current timeline</p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={deltaData} margin={{top:5,right:10,bottom:0,left:-20}}>
                   <XAxis dataKey="month" tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
@@ -218,7 +215,7 @@ export default function CreditScorePage() {
         </div>
       )}
 
-      {/* AI Coaching Card */}
+      {/* Coaching Card */}
       {tips.length > 0 && (
         <div className="card p-6" style={{borderColor:`${barColor}30`}}>
           <div className="flex items-center gap-3 mb-5">
@@ -226,8 +223,8 @@ export default function CreditScorePage() {
               <Zap size={18} style={{color:barColor}}/>
             </div>
             <div>
-              <h2 className="font-display font-semibold" style={{color:NAVY}}>Your AI coaching card</h2>
-              <p className="text-xs" style={{color:'#6B7280'}}>Personalized steps for this month</p>
+              <h2 className="font-display font-semibold" style={{color:NAVY}}>Strategic coaching card</h2>
+              <p className="text-xs" style={{color:'#6B7280'}}>Optimized steps for this month</p>
             </div>
           </div>
           <div className="space-y-4">

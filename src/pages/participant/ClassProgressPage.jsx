@@ -5,17 +5,17 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Radial
 const TEAL='#066A6F', NAVY='#102A43', PGREEN='#2FBF71', GOLD='#F4B000', CORAL='#F56A6A'
 
 const curriculum = [
-  {week:1, title:'Introduction to Homeownership',  topics:['The homebuying timeline','Understanding your credit report','Setting goals'],                  completed:true},
-  {week:2, title:'Credit Fundamentals',            topics:['Credit score factors','Reading a credit report','Dispute process'],                            completed:true},
-  {week:3, title:'Debt Management',                topics:['Debt-to-income ratio','Payoff strategies','Utilization tactics'],                              completed:true},
-  {week:4, title:'Saving for a Down Payment',      topics:['Down payment options','Emergency fund basics','Budget building'],                              completed:true},
-  {week:5, title:'Mortgage Basics',                topics:['Loan types overview','Fixed vs. adjustable rates','Prequalification'],                         completed:false},
-  {week:6, title:'FHA & Conventional Loans',       topics:['FHA requirements','PMI explained','Loan comparison'],                                          completed:false},
-  {week:7, title:'The Home Search Process',        topics:['Working with agents','Making offers','Inspection basics'],                                     completed:false},
-  {week:8, title:'Closing & Beyond',               topics:['Closing costs','Title and escrow','Post-closing steps'],                                       completed:false},
+  {week:1, title: 'Introduction to Homeownership',   topics:['The homebuying timeline','Understanding your credit report','Setting goals'],                  completed:true},
+  {week:2, title: 'Credit Fundamentals',             topics:['Credit score factors','Reading a credit report','Dispute process'],                            completed:true},
+  {week:3, title: 'Debt Management',                 topics:['Debt-to-income ratio','Payoff strategies','Utilization tactics'],                            completed:true},
+  {week:4, title: 'Saving for a Down Payment',       topics:['Down payment options','Emergency fund basics','Budget building'],                            completed:true},
+  {week:5, title: 'Mortgage Basics',                 topics:['Loan types overview','Fixed vs. adjustable rates','Prequalification'],                         completed:false},
+  {week:6, title: 'FHA & Conventional Loans',        topics:['FHA requirements','PMI explained','Loan comparison'],                                         completed:false},
+  {week:7, title: 'The Home Search Process',         topics:['Working with agents','Making offers','Inspection basics'],                                     completed:false},
+  {week:8, title: 'Closing & Beyond',                topics:['Closing costs','Title and escrow','Post-closing steps'],                                     completed:false},
 ]
 
-// Fake weekly attendance data for bar chart
+// Weekly attendance tracking data
 const weeklyAtt = [
   {week:'W1',present:1,absent:0},{week:'W2',present:1,absent:0},{week:'W3',present:1,absent:0},
   {week:'W4',present:0,absent:1},{week:'W5',present:1,absent:0},{week:'W6',present:1,absent:0},
@@ -34,16 +34,16 @@ export default function ClassProgressPage() {
     <div className="p-6 lg:p-10 max-w-5xl">
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>Class Progress</h1>
-        <p style={{color:'#6B7280'}}>Your homeownership education journey.</p>
+        <p style={{color:'#6B7280'}}>Educational tracking for your homeownership journey.</p>
       </div>
 
-      {/* Stats */}
+      {/* Analytics Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          {label:'Attendance',       value:`${pct}%`,             sub:`${att.attended} of ${att.total} classes`},
-          {label:'Modules complete', value:`${completed}/8`,      sub:'curriculum modules'},
-          {label:'Curriculum',       value:`${currPct}%`,         sub:'overall completion'},
-          {label:'Next class',       value:`Week ${completed+1}`, sub:curriculum[completed]?.title?.split(' ').slice(0,2).join(' ')+'…'},
+          {label:'Attendance Rate',     value:`${pct}%`,             sub:`${att.attended} of ${att.total} classes`},
+          {label:'Modules Validated',   value:`${completed}/8`,      sub:'curriculum modules'},
+          {label:'Program Completion',  value:`${currPct}%`,         sub:'overall progress'},
+          {label:'Scheduled Topic',     value:`Week ${completed+1}`, sub:curriculum[completed]?.title?.split(' ').slice(0,2).join(' ')+'…'},
         ].map((s,i)=>(
           <div key={i} className="card p-4">
             <p className="text-xs mb-1" style={{color:'#6B7280'}}>{s.label}</p>
@@ -53,32 +53,32 @@ export default function ClassProgressPage() {
         ))}
       </div>
 
-      {/* Charts row */}
+      {/* Progress Visualization */}
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        {/* Attendance radial */}
+        {/* Attendance Metric */}
         <div className="chart-card flex flex-col items-center justify-center text-center">
-          <p className="chart-title w-full text-left">Attendance rate</p>
-          <p className="chart-sub w-full text-left">Minimum required: 75%</p>
+          <p className="chart-title w-full text-left">Attendance Metric</p>
+          <p className="chart-sub w-full text-left">Program requirement: 75% threshold</p>
           <ResponsiveContainer width="100%" height={150}>
             <RadialBarChart cx="50%" cy="50%" innerRadius="55%" outerRadius="80%" data={radialData} startAngle={90} endAngle={-270}>
               <RadialBar dataKey="value" cornerRadius={8} fill={radialData[0].fill} background={{fill:'#E3E6EC'}}/>
             </RadialBarChart>
           </ResponsiveContainer>
           <p className="font-display text-4xl font-bold" style={{color:pct>=75?PGREEN:pct>=50?GOLD:CORAL}}>{pct}%</p>
-          <p className="text-xs mt-1" style={{color:'#6B7280'}}>{pct>=75?'✓ Meeting requirement':'Below 75% threshold'}</p>
+          <p className="text-xs mt-1" style={{color:'#6B7280'}}>{pct>=75?'✓ Requirement Verified':'Below 75% Threshold'}</p>
         </div>
 
-        {/* Weekly attendance bar */}
+        {/* Attendance Timeline */}
         <div className="chart-card lg:col-span-2">
-          <p className="chart-title">Weekly attendance</p>
-          <p className="chart-sub">Present (green) vs. absent (coral) per week</p>
+          <p className="chart-title">Attendance Timeline</p>
+          <p className="chart-sub">Status verification across weekly modules</p>
           <ResponsiveContainer width="100%" height={150}>
             <BarChart data={weeklyAtt} margin={{top:5,right:10,bottom:0,left:-20}} barSize={16}>
               <XAxis dataKey="week" tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
               <YAxis hide domain={[0,1]}/>
-              <Tooltip formatter={(v,n)=>[v===1?'Present':'Absent',n==='present'?'Attendance':'Absence']}/>
-              <Bar dataKey="present"  radius={[4,4,0,0]} fill={PGREEN}/>
-              <Bar dataKey="absent"   radius={[4,4,0,0]} fill={CORAL} fillOpacity={0.6}/>
+              <Tooltip formatter={(v,n)=>[v===1?'Present':'Absent',n==='present'?'Status':'Deviation']}/>
+              <Bar dataKey="present"   radius={[4,4,0,0]} fill={PGREEN}/>
+              <Bar dataKey="absent"    radius={[4,4,0,0]} fill={CORAL} fillOpacity={0.6}/>
             </BarChart>
           </ResponsiveContainer>
           <div className="flex items-center gap-4 mt-2">
@@ -91,10 +91,10 @@ export default function ClassProgressPage() {
         </div>
       </div>
 
-      {/* Curriculum */}
+      {/* Curriculum Framework */}
       <div className="card overflow-hidden mb-8">
         <div className="p-5 border-b" style={{borderColor:'#E3E6EC'}}>
-          <h2 className="font-display font-semibold" style={{color:NAVY}}>Curriculum modules</h2>
+          <h2 className="font-display font-semibold" style={{color:NAVY}}>Curriculum Framework</h2>
         </div>
         <div>
           {curriculum.map((week,i)=>(
@@ -110,7 +110,7 @@ export default function ClassProgressPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="font-medium text-sm" style={{color:week.completed?NAVY:'#6B7280'}}>Week {week.week}: {week.title}</p>
-                  {week.completed&&<span className="badge-green text-xs">Done</span>}
+                  {week.completed&&<span className="badge-green text-xs">Validated</span>}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {week.topics.map(t=>(
@@ -126,8 +126,8 @@ export default function ClassProgressPage() {
       {completed===curriculum.length&&(
         <div className="card p-8 text-center" style={{background:'#e8faf0',borderColor:`${PGREEN}40`}}>
           <Award className="mx-auto mb-4" size={48} style={{color:PGREEN}}/>
-          <h3 className="font-display text-2xl font-bold mb-2" style={{color:NAVY}}>Congratulations!</h3>
-          <p style={{color:'#6B7280'}}>You've completed the full homeownership curriculum.</p>
+          <h3 className="font-display text-2xl font-bold mb-2" style={{color:NAVY}}>Program Complete</h3>
+          <p style={{color:'#6B7280'}}>The full homeownership curriculum has been successfully validated.</p>
         </div>
       )}
     </div>
