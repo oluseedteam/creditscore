@@ -7,34 +7,24 @@
   --font-display: "Playfair Display", Georgia, serif;
   --font-mono: "DM Mono", monospace;
 
-  /* Colors */
-  --color-forest-50:  #f0faf5;
-  --color-forest-100: #d6f2e4;
-  --color-forest-200: #a8e4c6;
-  --color-forest-300: #6ccfa3;
-  --color-forest-400: #34b57d;
-  --color-forest-500: #1a9464;
-  --color-forest-600: #12754e;
-  --color-forest-700: #0e5c3d;
-  --color-forest-800: #0b4830;
-  --color-forest-900: #083524;
-  --color-forest-950: #041c13;
+  /* Client Brand Colors - MyScoreNova */
+  --color-brand-teal: #066A6F;      /* Main titles & Key shapes */
+  --color-brand-navy: #102A43;      /* Strong headings & Dark text */
+  --color-brand-green: #2FBF71;     /* Money themes & Progress */
+  --color-brand-gold: #F4B000;      /* Highlights, badges & Numbers */
+  --color-brand-coral: #F56A6A;     /* Buttons & Action steps */
 
-  --color-cream-50:  #fdfcf8;
-  --color-cream-100: #f9f6ee;
-  --color-cream-200: #f2edd9;
-  --color-cream-300: #e8e0c0;
-  --color-cream-400: #d9cfa0;
+  /* Neutrals */
+  --color-brand-white: #F9F5EF;     /* Slide/Page backgrounds */
+  --color-brand-light-gray: #E3E6EC; /* Boxes, sidebars & Tables */
+  --color-brand-charcoal: #22252A;   /* Body text */
+  --color-brand-muted: #6B7280;      /* Captions & Footnotes */
 
-  --color-navy-800: #0f1c2e;
-  --color-navy-900: #080f1a;
-  --color-navy-950: #040911;
-
-  /* Shadows */
-  --shadow-glow-forest: 0 0 40px rgba(26, 148, 100, 0.25);
-  --shadow-glow-sm: 0 0 20px rgba(26, 148, 100, 0.15);
+  /* Shadows - Updated with Brand Teal/Coral */
+  --shadow-glow-teal: 0 0 40px rgba(6, 106, 111, 0.15);
+  --shadow-glow-coral: 0 4px 16px rgba(245, 106, 106, 0.25);
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0 4px 24px rgba(0,0,0,0.1);
+  --shadow-card-hover: 0 10px 30px rgba(16, 42, 67, 0.08);
 }
 
 /* ================= BASE ================= */
@@ -45,79 +35,111 @@
 
   body {
     font-family: var(--font-sans);
-    color: var(--color-navy-900);
-    background-color: var(--color-cream-50);
+    color: var(--color-brand-charcoal);
+    background-color: var(--color-brand-white);
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background-color: var(--color-forest-200);
-    color: var(--color-forest-900);
+    background-color: var(--color-brand-green);
+    color: white;
   }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--color-cream-100); }
+  ::-webkit-scrollbar-track { background: var(--color-brand-light-gray); }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-forest-300);
+    background: var(--color-brand-teal);
     border-radius: 9999px;
   }
 }
 
 /* ================= COMPONENTS ================= */
 @layer components {
+  /* Primary Action: Coral Energy */
   .btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--color-forest-600);
+    padding: 0.75rem 1.75rem;
+    background: var(--color-brand-coral);
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     border-radius: 0.75rem;
-    transition: all 0.2s;
-    box-shadow: var(--shadow-glow-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-glow-coral);
   }
 
   .btn-primary:hover {
-    background: var(--color-forest-700);
+    transform: translateY(-2px);
+    filter: brightness(110%);
+    box-shadow: 0 6px 20px rgba(245, 106, 106, 0.35);
   }
 
+  /* Secondary: Deep Teal Outline */
   .btn-secondary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    border: 1px solid var(--color-forest-300);
-    color: var(--color-forest-700);
+    border: 2px solid var(--color-brand-teal);
+    color: var(--color-brand-teal);
+    font-weight: 600;
     border-radius: 0.75rem;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-brand-teal);
+    color: white;
   }
 
   .card {
     background: white;
-    border-radius: 1rem;
-    border: 1px solid var(--color-cream-200);
+    border-radius: 1.25rem;
+    border: 1px solid var(--color-brand-light-gray);
     box-shadow: var(--shadow-card);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
   }
 
   .input-field {
     width: 100%;
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
-    border: 1px solid var(--color-cream-300);
-    color: var(--color-navy-900);
+    border: 1px solid var(--color-brand-light-gray);
+    color: var(--color-brand-charcoal);
+    background: white;
+    transition: border-color 0.2s;
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-brand-teal);
+    ring: 2px var(--color-brand-teal);
   }
 }
 
 /* ================= UTILITIES ================= */
 @layer utilities {
+  /* Premium Gradient for MyScoreNova Branding */
   .text-gradient {
     background: linear-gradient(
-      to bottom right,
-      var(--color-forest-700),
-      var(--color-forest-500),
-      var(--color-forest-400)
+      135deg,
+      var(--color-brand-navy),
+      var(--color-brand-teal),
+      var(--color-brand-green)
     );
     -webkit-background-clip: text;
     color: transparent;
+  }
+
+  .bg-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(227, 230, 236, 0.5);
   }
 }

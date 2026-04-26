@@ -1,166 +1,136 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, CheckCircle, TrendingUp, Shield, Users, Star, ChevronDown } from 'lucide-react'
+import { ArrowRight, CheckCircle, TrendingUp, Shield, Users, Star, ChevronDown, Zap, BarChart2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, Cell } from 'recharts'
+
+// Brand colors
+const TEAL   = '#066A6F'
+const NAVY   = '#102A43'
+const PGREEN = '#2FBF71'
+const GOLD   = '#F4B000'
+const CORAL  = '#F56A6A'
 
 const stats = [
-  { value: '94%', label: 'Completion rate' },
-  { value: '127pts', label: 'Avg. score gain' },
-  { value: '3.2mo', label: 'Avg. to Good credit' },
+  { value: '94%',  label: 'Completion rate' },
+  { value: '127',  label: 'Avg. score gain (pts)' },
+  { value: '3.2',  label: 'Avg. months to Good credit' },
   { value: '500+', label: 'Homeowners created' },
 ]
 
 const steps = [
-  {
-    number: '01',
-    title: 'Enroll & attend classes',
-    desc: 'Join our structured homeownership curriculum. Track attendance automatically and earn progress milestones.',
-    color: 'forest',
-  },
-  {
-    number: '02',
-    title: 'Submit monthly scores',
-    desc: 'Upload your credit score each month. Our AI engine analyzes your standing and triggers the right coaching path.',
-    color: 'forest',
-  },
-  {
-    number: '03',
-    title: 'Get AI coaching',
-    desc: 'Receive a personalized Coaching Card each month — step-by-step guidance to repair, rebuild, and elevate your credit.',
-    color: 'forest',
-  },
-  {
-    number: '04',
-    title: 'Unlock the loan gateway',
-    desc: 'Hit Good credit status and your Loan Assistance module unlocks automatically — connect directly with a loan officer.',
-    color: 'forest',
-  },
+  { number:'01', title:'Enroll & attend classes', desc:'Join structured homeownership curriculum. Track attendance automatically and earn progress milestones.', accent: TEAL },
+  { number:'02', title:'Submit monthly scores',   desc:'Upload your credit score each month. Our AI engine analyzes your standing and triggers the right coaching path.', accent: PGREEN },
+  { number:'03', title:'Get AI coaching',         desc:'Receive a personalized Coaching Card — step-by-step guidance to repair, rebuild, and elevate your credit.', accent: GOLD },
+  { number:'04', title:'Unlock the loan gateway', desc:'Hit Good credit status and your Loan Assistance module unlocks automatically.', accent: CORAL },
 ]
 
 const features = [
-  {
-    icon: TrendingUp,
-    title: 'Credit triage engine',
-    desc: 'Automated color-coded routing replaces manual file reviews. Bad, Low, or Good — the system responds instantly.',
-  },
-  {
-    icon: Shield,
-    title: 'Data privacy by design',
-    desc: 'Participants own their data with full read/write access. Admins get read-only visibility — zero risk of modifications.',
-  },
-  {
-    icon: Users,
-    title: 'Watchtower oversight',
-    desc: "Administrators monitor the entire cohort's health from one command center, instantly surfacing loan-ready candidates.",
-  },
+  { icon: TrendingUp, title:'Credit triage engine',   desc:'Automated color-coded routing replaces manual file reviews. Bad, Low, or Good — the system responds instantly.', color: PGREEN },
+  { icon: Shield,     title:'Data privacy by design', desc:'Participants own their data with full read/write access. Admins get read-only visibility — zero risk of modifications.', color: TEAL },
+  { icon: BarChart2,  title:'Rich analytics & charts', desc:'Visual dashboards with score history, attendance trends, and cohort health charts — all updated in real time.', color: GOLD },
+  { icon: Users,      title:'Watchtower oversight',   desc:"Monitor the entire cohort's health from one command center, instantly surfacing loan-ready candidates.", color: CORAL },
 ]
 
-const testimonials = [
-  {
-    quote: "I went from a 498 to a 712 in seven months. The coaching cards were the difference — they told me exactly what to do.",
-    name: 'Alex J.',
-    score: '498 → 712',
-    months: '7 months',
-    initials: 'AJ',
-  },
-  {
-    quote: "The platform gamified everything. When the Loan Gateway finally unlocked, I actually cried. I'm closing on my house next month.",
-    name: 'Sarah K.',
-    score: '621 → 745',
-    months: '9 months',
-    initials: 'SK',
-  },
-  {
-    quote: "As a counselor, the Watchtower dashboard cut my review time from hours to minutes. I can now focus on the people who need help.",
-    name: 'Counselor T.',
-    score: 'Admin view',
-    months: 'Staff',
-    initials: 'CT',
-  },
+// Demo chart data
+const heroScoreData = [
+  { month:'Oct', score:498 },{ month:'Nov', score:521 },{ month:'Dec', score:549 },
+  { month:'Jan', score:580 },{ month:'Feb', score:610 },{ month:'Mar', score:648 },
+  { month:'Apr', score:712 },
 ]
 
-function CountUp({ target, suffix = '' }) {
+const cohortData = [
+  { status:'Critical', count:12, fill: CORAL },
+  { status:'At Risk',  count:23, fill: GOLD  },
+  { status:'Ready',    count:31, fill: PGREEN },
+]
+
+const radialData = [{ name:'Complete', value:75, fill: PGREEN }]
+
+function CountUp({ target, suffix='' }) {
   const [count, setCount] = useState(0)
   useEffect(() => {
-    const numeric = parseInt(target.replace(/\D/g, ''))
-    const dur = 1800
-    const steps = 60
-    const inc = numeric / steps
-    let cur = 0
-    const timer = setInterval(() => {
-      cur += inc
-      if (cur >= numeric) { setCount(numeric); clearInterval(timer) }
-      else setCount(Math.floor(cur))
-    }, dur / steps)
-    return () => clearInterval(timer)
-  }, [target])
+    const numeric = parseFloat(target.replace(/[^0-9.]/g,''))
+    const dur=1800, steps=60, inc=numeric/steps
+    let cur=0
+    const t=setInterval(()=>{cur+=inc;if(cur>=numeric){setCount(numeric);clearInterval(t)}else setCount(parseFloat(cur.toFixed(1)))}, dur/steps)
+    return ()=>clearInterval(t)
+  },[target])
   return <>{target.replace(/[\d.]+/, count)}</>
+}
+
+const CustomAreaTooltip = ({active,payload,label}) => {
+  if(!active||!payload?.length) return null
+  const s=payload[0].value
+  const color=s>=670?PGREEN:s>=580?GOLD:CORAL
+  return (
+    <div className="card px-4 py-3 text-sm shadow-lg border-0" style={{minWidth:100}}>
+      <p className="text-xs mb-1" style={{color:'#6B7280'}}>{label}</p>
+      <p className="font-display font-bold text-lg" style={{color}}>{s}</p>
+    </div>
+  )
 }
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', fn)
-    return () => window.removeEventListener('scroll', fn)
-  }, [])
+  useEffect(()=>{const fn=()=>setScrolled(window.scrollY>40);window.addEventListener('scroll',fn);return ()=>window.removeEventListener('scroll',fn)},[])
 
   return (
-    <div className="min-h-screen bg-cream-50 overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden" style={{background:'#F9F5EF'}}>
 
       {/* ── Nav ── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md border-b border-cream-200 shadow-sm' : ''}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled?'bg-white/92 backdrop-blur-md border-b shadow-sm':''}` } style={scrolled?{borderColor:'#E3E6EC'}:{}}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-forest-600 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 1.5L15.5 5.5V12.5L9 16.5L2.5 12.5V5.5L9 1.5Z" stroke="white" strokeWidth="1.5" fill="none"/>
-                <circle cx="9" cy="9" r="2.5" fill="white"/>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-glow-sm" style={{background:TEAL}}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2L17 6.5V13.5L10 18L3 13.5V6.5L10 2Z" stroke="white" strokeWidth="1.5" fill="none"/>
+                <circle cx="10" cy="10" r="2.5" fill="#2FBF71"/>
+                <circle cx="10" cy="10" r="1" fill="white"/>
               </svg>
             </div>
-            <span className="font-display font-semibold text-navy-900 text-lg">Path to Ownership</span>
+            <div>
+              <span className="font-display font-bold text-lg" style={{color:NAVY}}>MyScoreNova</span>
+            </div>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#how-it-works" className="text-sm text-navy-800 hover:text-forest-600 transition-colors">How it works</a>
-            <a href="#features" className="text-sm text-navy-800 hover:text-forest-600 transition-colors">Features</a>
-            <a href="#testimonials" className="text-sm text-navy-800 hover:text-forest-600 transition-colors">Stories</a>
+            {[['#how-it-works','How it works'],['#features','Features'],['#charts','See it in action'],['#testimonials','Stories']].map(([href,label])=>(
+              <a key={href} href={href} className="text-sm transition-colors hover:opacity-70" style={{color:NAVY}}>{label}</a>
+            ))}
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm font-medium text-navy-800 hover:text-forest-600 transition-colors px-3 py-2">Sign in</Link>
-            <Link to="/signup" className="btn-primary text-sm py-2 px-5">Get started</Link>
+            <Link to="/login" className="text-sm font-medium px-3 py-2 transition-colors" style={{color:NAVY}}>Sign in</Link>
+            <Link to="/signup" className="btn-primary text-sm py-2 px-5 shadow-glow-sm">Get started <ArrowRight size={15}/></Link>
           </div>
         </div>
       </nav>
 
       {/* ── Hero ── */}
       <section className="relative min-h-screen flex flex-col justify-center pt-24 pb-16 overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cream-50 via-cream-100 to-forest-50 -z-10" />
-        <div className="absolute top-20 right-0 w-[600px] h-[600px] rounded-full bg-forest-100/40 blur-3xl -z-10 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-cream-300/50 blur-3xl -z-10 -translate-x-1/3" />
+        <div className="absolute inset-0" style={{background:'linear-gradient(150deg,#e6f4f4 0%,#F9F5EF 45%,#fef9e6 100%)'}} />
+        <div className="absolute top-20 right-0 w-[700px] h-[700px] rounded-full blur-3xl -z-0 translate-x-1/3 pointer-events-none" style={{background:'rgba(6,106,111,0.07)'}}/>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-3xl -z-0 -translate-x-1/3 pointer-events-none" style={{background:'rgba(244,176,0,0.08)'}}/>
 
         {/* Floating shapes */}
-        <div className="absolute top-32 right-16 w-24 h-24 rounded-2xl border-2 border-forest-200/60 rotate-12 animate-float hidden lg:block" />
-        <div className="absolute bottom-32 left-16 w-16 h-16 rounded-full border-2 border-forest-300/40 animate-float hidden lg:block" style={{animationDelay:'2s'}} />
-        <div className="absolute top-1/2 right-1/4 w-3 h-3 rounded-full bg-forest-400/60 animate-pulse-slow" />
+        <div className="absolute top-32 right-12 w-20 h-20 rounded-2xl border-2 rotate-12 animate-float hidden lg:block" style={{borderColor:'rgba(6,106,111,0.2)'}}/>
+        <div className="absolute bottom-32 left-16 w-14 h-14 rounded-full border-2 animate-float hidden lg:block" style={{borderColor:'rgba(47,191,113,0.3)',animationDelay:'2s'}}/>
 
-        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div className="animate-fade-up">
             <div className="section-tag mb-8">
-              <div className="w-2 h-2 rounded-full bg-forest-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{background:PGREEN}}/>
               AI-powered homeownership program
             </div>
-            <h1 className="font-display text-5xl lg:text-6xl xl:text-7xl font-bold text-navy-900 leading-[1.08] mb-6">
-              Architecting<br />
-              the <span className="text-gradient italic">path</span><br />
-              to ownership
+            <h1 className="font-display text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.08] mb-6" style={{color:NAVY}}>
+              Your score.<br/>
+              Your <span className="text-gradient-teal italic">nova</span>.<br/>
+              Your home.
             </h1>
-            <p className="text-lg text-navy-800/70 leading-relaxed mb-10 max-w-lg">
-              From bad credit to loan-ready. Our AI engine guides homebuyers through credit rehabilitation, class attendance, and financial conversion — automatically.
+            <p className="text-lg leading-relaxed mb-10 max-w-lg" style={{color:'#6B7280'}}>
+              MyScoreNova guides future homeowners from bad credit to loan-ready through AI coaching, class tracking, and automated financial routing.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/signup" className="btn-primary text-base px-8 py-3.5 shadow-glow-forest">
-                Start your journey <ArrowRight size={18} />
+              <Link to="/signup" className="btn-primary text-base px-8 py-3.5 shadow-glow-teal">
+                Start your journey <ArrowRight size={18}/>
               </Link>
               <a href="#how-it-works" className="btn-secondary text-base px-8 py-3.5">
                 See how it works
@@ -168,97 +138,77 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-4 mt-8">
               <div className="flex -space-x-2">
-                {['AJ','SK','MR','DC'].map((i, idx) => (
-                  <div key={idx} className="w-8 h-8 rounded-full bg-forest-200 border-2 border-white flex items-center justify-center text-[10px] font-medium text-forest-800">{i}</div>
+                {['AJ','SK','MR','DC'].map((i,idx)=>(
+                  <div key={idx} className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-medium" style={{background:'#e6f4f4',color:TEAL}}>{i}</div>
                 ))}
               </div>
-              <p className="text-sm text-navy-800/60"><span className="font-medium text-navy-900">500+</span> participants on their path</p>
+              <p className="text-sm" style={{color:'#6B7280'}}><span className="font-medium" style={{color:NAVY}}>500+</span> participants on their path</p>
             </div>
           </div>
 
-          {/* Hero card */}
+          {/* Hero card with live chart */}
           <div className="animate-fade-up animate-delay-200 hidden lg:block">
             <div className="relative">
-              <div className="card p-8 shadow-2xl">
-                <div className="flex items-center justify-between mb-6">
+              <div className="card p-6 shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-xs text-navy-800/50 uppercase tracking-wider mb-1">Your progress</p>
-                    <p className="font-display text-2xl font-semibold text-navy-900">Growing strong</p>
+                    <p className="text-xs uppercase tracking-wider mb-0.5" style={{color:'#6B7280'}}>Score trajectory</p>
+                    <p className="font-display text-xl font-semibold" style={{color:NAVY}}>+214 pts in 7 months</p>
                   </div>
-                  <div className="badge-green">
-                    <div className="w-1.5 h-1.5 rounded-full bg-forest-500 animate-pulse" />
-                    Active
-                  </div>
+                  <div className="badge-green"><div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{background:PGREEN}}/> Growing</div>
                 </div>
-
-                {/* Score bar */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-baseline mb-2">
-                    <span className="text-sm text-navy-800/60">Credit score</span>
-                    <span className="font-mono font-medium text-forest-700 text-xl">712</span>
-                  </div>
-                  <div className="h-3 bg-cream-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-forest-400 to-forest-600 rounded-full" style={{width:'72%'}} />
-                  </div>
-                  <div className="flex justify-between mt-1.5 text-[10px] text-navy-800/40">
-                    <span>300</span><span>580</span><span>670</span><span>850</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="bg-cream-100 rounded-xl p-3">
-                    <p className="text-xs text-navy-800/50 mb-1">Classes attended</p>
-                    <p className="font-semibold text-navy-900">6 / 8</p>
-                  </div>
-                  <div className="bg-forest-50 rounded-xl p-3">
-                    <p className="text-xs text-forest-700/70 mb-1">Score this month</p>
-                    <p className="font-semibold text-forest-800">+28 pts</p>
-                  </div>
-                </div>
-
-                <div className="bg-forest-600 rounded-xl p-4 flex items-center gap-3">
-                  <CheckCircle className="text-forest-200 shrink-0" size={20} />
-                  <div>
-                    <p className="text-white text-sm font-medium">Loan gateway unlocked!</p>
-                    <p className="text-forest-200 text-xs mt-0.5">Connect with a loan officer today</p>
-                  </div>
+                <ResponsiveContainer width="100%" height={140}>
+                  <AreaChart data={heroScoreData} margin={{top:5,right:5,bottom:0,left:-20}}>
+                    <defs>
+                      <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor={PGREEN} stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor={PGREEN} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="month" tick={{fontSize:10,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                    <YAxis domain={[460,760]} tick={{fontSize:10,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                    <Tooltip content={<CustomAreaTooltip/>}/>
+                    <Area type="monotone" dataKey="score" stroke={PGREEN} strokeWidth={2.5} fill="url(#heroGrad)" dot={{r:4,fill:PGREEN,strokeWidth:0}} activeDot={{r:6}}/>
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {[['Start','498',CORAL],['Now','712',PGREEN],['Goal','750+',TEAL]].map(([lbl,val,c])=>(
+                    <div key={lbl} className="rounded-xl p-2.5 text-center" style={{background:'#F9F5EF'}}>
+                      <p className="text-[10px] mb-0.5" style={{color:'#6B7280'}}>{lbl}</p>
+                      <p className="font-display font-bold text-base" style={{color:c}}>{val}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Floating mini cards */}
+              {/* Floating */}
               <div className="absolute -left-8 top-1/3 card p-3 shadow-lg animate-float" style={{animationDelay:'1s'}}>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                    <TrendingUp size={14} className="text-amber-700" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-navy-800/50">AI Coaching</p>
-                    <p className="text-xs font-medium text-navy-900">New card ready</p>
-                  </div>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:'#fef9e6'}}><Zap size={13} style={{color:GOLD}}/></div>
+                  <div><p className="text-[10px]" style={{color:'#6B7280'}}>AI coaching</p><p className="text-xs font-medium" style={{color:NAVY}}>New card ready</p></div>
                 </div>
               </div>
               <div className="absolute -right-6 bottom-1/4 card p-3 shadow-lg animate-float" style={{animationDelay:'3s'}}>
-                <p className="text-[10px] text-navy-800/50 mb-1">Next class</p>
-                <p className="text-xs font-medium text-navy-900">Thursday 6pm</p>
+                <p className="text-[10px] mb-0.5" style={{color:'#6B7280'}}>Loan gateway</p>
+                <p className="text-xs font-medium" style={{color:PGREEN}}>🔓 Unlocked!</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown size={20} className="text-navy-800/30" />
+          <ChevronDown size={20} style={{color:'rgba(16,42,67,0.3)'}}/>
         </div>
       </section>
 
-      {/* ── Stats ── */}
-      <section className="bg-forest-900 py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-grain" />
+      {/* ── Stats bar ── */}
+      <section style={{background:NAVY}} className="py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5" style={{backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")"}}/>
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((s, i) => (
+            {stats.map((s,i)=>(
               <div key={i} className="text-center">
-                <p className="font-display text-4xl font-bold text-white mb-2"><CountUp target={s.value} /></p>
-                <p className="text-forest-300 text-sm">{s.label}</p>
+                <p className="font-display text-4xl font-bold text-white mb-2"><CountUp target={s.value}/></p>
+                <p className="text-sm" style={{color:'#4db2b2'}}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -269,89 +219,185 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
           <div className="section-tag mx-auto mb-4">The journey</div>
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-navy-900 mb-4">Four steps to your front door</h2>
-          <p className="text-navy-800/60 max-w-xl mx-auto">An automated pipeline that cultivates mortgage-ready candidates from the ground up.</p>
+          <h2 className="font-display text-4xl lg:text-5xl font-bold mb-4" style={{color:NAVY}}>Four steps to your front door</h2>
+          <p className="max-w-xl mx-auto" style={{color:'#6B7280'}}>An automated pipeline that cultivates mortgage-ready candidates from the ground up.</p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((step, i) => (
+          {steps.map((step,i)=>(
             <div key={i} className="card-hover p-6 group">
-              <div className="font-mono text-5xl font-bold text-forest-100 group-hover:text-forest-200 transition-colors mb-4 leading-none">{step.number}</div>
-              <h3 className="font-display text-lg font-semibold text-navy-900 mb-2">{step.title}</h3>
-              <p className="text-sm text-navy-800/60 leading-relaxed">{step.desc}</p>
+              <div className="font-mono text-5xl font-bold mb-4 leading-none transition-colors" style={{color:`${step.accent}22`}}>{step.number}</div>
+              <div className="w-1 h-6 rounded-full mb-4 transition-all" style={{background:step.accent}}/>
+              <h3 className="font-display text-lg font-semibold mb-2" style={{color:NAVY}}>{step.title}</h3>
+              <p className="text-sm leading-relaxed" style={{color:'#6B7280'}}>{step.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Credit triage visual ── */}
-      <section className="bg-cream-100 py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <div className="section-tag mx-auto mb-4">Intelligent routing</div>
-            <h2 className="font-display text-4xl font-bold text-navy-900">The credit triage engine</h2>
+      {/* ── Charts demo section ── */}
+      <section id="charts" style={{background:'#F0EDE6'}} className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="section-tag mx-auto mb-4">Live analytics</div>
+            <h2 className="font-display text-4xl font-bold mb-4" style={{color:NAVY}}>See your progress — visually</h2>
+            <p className="max-w-xl mx-auto" style={{color:'#6B7280'}}>Rich dashboards give you and your counselor a clear picture of where you stand and where you're headed.</p>
           </div>
-          <div className="card p-8 lg:p-12">
-            <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="card bg-cream-50 px-6 py-4 font-medium text-navy-900 text-center whitespace-nowrap">Monthly score input</div>
-              <div className="text-cream-400 font-light text-2xl hidden lg:block">→</div>
-              <div className="flex flex-col gap-4 flex-1 w-full">
-                {[
-                  { color: 'bg-red-500', label: 'Bad credit (< 580)', action: 'Routes to aggressive AI credit rehabilitation & dispute automation', badge: 'badge-red' },
-                  { color: 'bg-amber-400', label: 'Low credit (580–669)', action: 'Routes to targeted AI debt-management coaching modules', badge: 'badge-yellow' },
-                  { color: 'bg-forest-500', label: 'Good credit (670+)', action: 'Routes automatically to the Loan Assistance Gateway', badge: 'badge-green' },
-                ].map((row, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-cream-50 border border-cream-200 hover:border-forest-200 transition-colors">
-                    <div className={`w-3 h-3 rounded-full ${row.color} shrink-0`} />
-                    <span className="font-medium text-sm text-navy-900 w-44 shrink-0">{row.label}</span>
-                    <span className="text-navy-800/60 text-sm">{row.action}</span>
-                  </div>
-                ))}
+          <div className="grid lg:grid-cols-3 gap-6">
+
+            {/* Score area chart */}
+            <div className="chart-card lg:col-span-2">
+              <p className="chart-title">Credit score over time</p>
+              <p className="chart-sub">Monthly submissions tracked against Good credit threshold (670)</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={heroScoreData} margin={{top:5,right:10,bottom:0,left:-20}}>
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor={PGREEN} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={PGREEN} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="month" tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <YAxis domain={[460,760]} tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <Tooltip content={<CustomAreaTooltip/>}/>
+                  <Area type="monotone" dataKey="score" stroke={PGREEN} strokeWidth={2.5} fill="url(#scoreGrad)"
+                    dot={{r:5,fill:PGREEN,strokeWidth:0}} activeDot={{r:7}}/>
+                </AreaChart>
+              </ResponsiveContainer>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1.5 text-xs" style={{color:'#6B7280'}}>
+                  <div className="w-3 h-0.5 rounded" style={{background:PGREEN}}/>Score path
+                </div>
+                <div className="flex items-center gap-1.5 text-xs" style={{color:'#6B7280'}}>
+                  <div className="w-3 h-0.5 rounded border-t-2 border-dashed" style={{borderColor:TEAL}}/>670 threshold
+                </div>
               </div>
             </div>
-            <p className="text-center text-xs text-navy-800/40 mt-8">Replaces manual file reviews with automated, color-coded status triggers</p>
+
+            {/* Cohort bar chart */}
+            <div className="chart-card">
+              <p className="chart-title">Cohort breakdown</p>
+              <p className="chart-sub">Participants by credit status</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={cohortData} margin={{top:5,right:10,bottom:5,left:-20}}>
+                  <XAxis dataKey="status" tick={{fontSize:10,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{fontSize:10,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <Tooltip cursor={{fill:'rgba(0,0,0,0.03)'}} formatter={(v)=>[v,'Participants']}/>
+                  <Bar dataKey="count" radius={[6,6,0,0]}>
+                    {cohortData.map((entry,i)=><Cell key={i} fill={entry.fill}/>)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Progress radial */}
+            <div className="chart-card flex flex-col items-center justify-center text-center">
+              <p className="chart-title w-full text-left">Curriculum progress</p>
+              <p className="chart-sub w-full text-left">Classes completed this cohort</p>
+              <ResponsiveContainer width="100%" height={160}>
+                <RadialBarChart cx="50%" cy="50%" innerRadius="55%" outerRadius="80%" data={radialData} startAngle={90} endAngle={-270}>
+                  <RadialBar dataKey="value" cornerRadius={8} fill={PGREEN} background={{fill:'#E3E6EC'}}/>
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <p className="font-display text-4xl font-bold mt-2" style={{color:NAVY}}>75%</p>
+              <p className="text-xs mt-1" style={{color:'#6B7280'}}>Average class completion</p>
+            </div>
+
+            {/* Score distribution histogram */}
+            <div className="chart-card lg:col-span-2">
+              <p className="chart-title">Score distribution histogram</p>
+              <p className="chart-sub">Number of participants in each score range</p>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={[
+                  {range:'300–399',count:2,fill:CORAL},{range:'400–499',count:5,fill:CORAL},
+                  {range:'500–579',count:8,fill:CORAL},{range:'580–619',count:10,fill:GOLD},
+                  {range:'620–669',count:14,fill:GOLD},{range:'670–719',count:18,fill:PGREEN},
+                  {range:'720–779',count:9,fill:PGREEN},{range:'780–850',count:4,fill:TEAL},
+                ]} margin={{top:5,right:10,bottom:5,left:-20}}>
+                  <XAxis dataKey="range" tick={{fontSize:9,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{fontSize:10,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
+                  <Tooltip cursor={{fill:'rgba(0,0,0,0.03)'}} formatter={(v)=>[v,'Participants']}/>
+                  <Bar dataKey="count" radius={[4,4,0,0]}>
+                    {[CORAL,CORAL,CORAL,GOLD,GOLD,PGREEN,PGREEN,TEAL].map((c,i)=><Cell key={i} fill={c}/>)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Credit triage ── */}
+      <section className="py-24 max-w-5xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <div className="section-tag mx-auto mb-4">Intelligent routing</div>
+          <h2 className="font-display text-4xl font-bold" style={{color:NAVY}}>The credit triage engine</h2>
+        </div>
+        <div className="card p-8 lg:p-12">
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="card px-6 py-4 font-medium text-center whitespace-nowrap shrink-0" style={{color:NAVY,background:'#F9F5EF'}}>Monthly score input</div>
+            <div className="text-2xl hidden lg:block" style={{color:'#E3E6EC'}}>→</div>
+            <div className="flex flex-col gap-4 flex-1 w-full">
+              {[
+                [CORAL,'Bad credit (< 580)','Routes to aggressive AI credit rehabilitation & dispute automation'],
+                [GOLD,'Low credit (580–669)','Routes to targeted AI debt-management coaching modules'],
+                [PGREEN,'Good credit (670+)','Routes automatically to the Loan Assistance Gateway'],
+              ].map(([c,label,action])=>(
+                <div key={label} className="flex items-center gap-4 p-4 rounded-xl border hover:border-opacity-50 transition-colors" style={{background:'#F9F5EF',borderColor:'#E3E6EC'}}>
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{background:c}}/>
+                  <span className="font-medium text-sm w-44 shrink-0" style={{color:NAVY}}>{label}</span>
+                  <span className="text-sm" style={{color:'#6B7280'}}>{action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="text-center text-xs mt-8" style={{color:'#6B7280'}}>Replaces manual file reviews with automated, color-coded status triggers</p>
         </div>
       </section>
 
       {/* ── Features ── */}
-      <section id="features" className="py-24 max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <div className="section-tag mx-auto mb-4">Platform features</div>
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-navy-900">Built for real results</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {features.map((f, i) => (
-            <div key={i} className="card-hover p-8 group">
-              <div className="w-12 h-12 rounded-2xl bg-forest-100 flex items-center justify-center mb-6 group-hover:bg-forest-200 transition-colors">
-                <f.icon size={22} className="text-forest-700" />
+      <section id="features" style={{background:'#F0EDE6'}} className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <div className="section-tag mx-auto mb-4">Platform features</div>
+            <h2 className="font-display text-4xl lg:text-5xl font-bold" style={{color:NAVY}}>Built for real results</h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((f,i)=>(
+              <div key={i} className="card-hover p-6 group">
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-5 transition-opacity" style={{background:`${f.color}18`}}>
+                  <f.icon size={20} style={{color:f.color}}/>
+                </div>
+                <h3 className="font-display text-lg font-semibold mb-2" style={{color:NAVY}}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{color:'#6B7280'}}>{f.desc}</p>
               </div>
-              <h3 className="font-display text-xl font-semibold text-navy-900 mb-3">{f.title}</h3>
-              <p className="text-navy-800/60 text-sm leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section id="testimonials" className="bg-navy-900 py-24 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-grain" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-forest-600/20 blur-3xl" />
+      <section id="testimonials" style={{background:NAVY}} className="py-24 relative overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl" style={{background:'rgba(6,106,111,0.15)'}}/>
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-forest-700/50 bg-forest-900/50 text-forest-400 text-sm font-medium mb-4">
-              <Star size={14} fill="currentColor" /> Real stories
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-medium mb-4" style={{borderColor:'rgba(6,106,111,0.4)',background:'rgba(6,106,111,0.15)',color:'#4db2b2'}}>
+              <Star size={14} fill="currentColor"/> Real stories
             </div>
             <h2 className="font-display text-4xl lg:text-5xl font-bold text-white">Their path. Their home.</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 hover:bg-white/8 transition-colors">
-                <p className="text-white/80 text-sm leading-relaxed mb-6 italic font-display">"{t.quote}"</p>
+            {[
+              {q:'"I went from a 498 to a 712 in seven months. The coaching cards told me exactly what to do."',n:'Alex J.',s:'498 → 712',m:'7 months',i:'AJ'},
+              {q:'"When the Loan Gateway finally unlocked, I cried. Closing on my house next month."',n:'Sarah K.',s:'621 → 745',m:'9 months',i:'SK'},
+              {q:'"As a counselor, the Watchtower dashboard cut my review time from hours to minutes."',n:'Counselor T.',s:'Admin view',m:'Staff',i:'CT'},
+            ].map((t,i)=>(
+              <div key={i} className="rounded-2xl p-8 hover:bg-white/8 transition-colors" style={{background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)'}}>
+                <p className="text-sm leading-relaxed mb-6 italic font-display" style={{color:'rgba(255,255,255,0.8)'}}>{t.q}</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-forest-800 flex items-center justify-center text-forest-300 text-xs font-medium">{t.initials}</div>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium" style={{background:TEAL,color:'white'}}>{t.i}</div>
                   <div>
-                    <p className="text-white text-sm font-medium">{t.name}</p>
-                    <p className="text-forest-400 text-xs">{t.score} · {t.months}</p>
+                    <p className="text-white text-sm font-medium">{t.n}</p>
+                    <p className="text-xs" style={{color:'#4db2b2'}}>{t.s} · {t.m}</p>
                   </div>
                 </div>
               </div>
@@ -363,31 +409,27 @@ export default function LandingPage() {
       {/* ── CTA ── */}
       <section className="py-32 max-w-4xl mx-auto px-6 text-center">
         <div className="section-tag mx-auto mb-8">Ready to begin?</div>
-        <h2 className="font-display text-5xl lg:text-6xl font-bold text-navy-900 mb-6">
-          Your front door<br /><span className="text-gradient italic">is waiting</span>
+        <h2 className="font-display text-5xl lg:text-6xl font-bold mb-6" style={{color:NAVY}}>
+          Your front door<br/><span className="text-gradient-teal italic">is waiting</span>
         </h2>
-        <p className="text-navy-800/60 text-lg mb-10 max-w-xl mx-auto">Join hundreds of future homeowners who are building their path one credit point at a time.</p>
+        <p className="text-lg mb-10 max-w-xl mx-auto" style={{color:'#6B7280'}}>Join hundreds of future homeowners building their path one credit point at a time.</p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link to="/signup" className="btn-primary text-base px-10 py-4 shadow-glow-forest">
-            Create your account <ArrowRight size={18} />
-          </Link>
-          <Link to="/login" className="btn-secondary text-base px-10 py-4">
-            Sign in instead
-          </Link>
+          <Link to="/signup" className="btn-primary text-base px-10 py-4 shadow-glow-teal">Create your account <ArrowRight size={18}/></Link>
+          <Link to="/login" className="btn-secondary text-base px-10 py-4">Sign in instead</Link>
         </div>
-        <p className="text-xs text-navy-800/40 mt-6">Demo credentials: <span className="font-mono">alex@demo.com</span> / <span className="font-mono">demo123</span> · Admin: <span className="font-mono">admin@pto.com</span> / <span className="font-mono">admin123</span></p>
+        <p className="text-xs mt-6" style={{color:'#6B7280'}}>Demo: <span className="font-mono">alex@demo.com</span> / <span className="font-mono">demo123</span> · Admin: <span className="font-mono">admin@pto.com</span> / <span className="font-mono">admin123</span></p>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-cream-200 py-8">
+      <footer className="border-t py-8" style={{borderColor:'#E3E6EC'}}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-forest-600 flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L15.5 5.5V12.5L9 16.5L2.5 12.5V5.5L9 1.5Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="9" cy="9" r="2.5" fill="white"/></svg>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:TEAL}}>
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 2L17 6.5V13.5L10 18L3 13.5V6.5L10 2Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="10" cy="10" r="2" fill="#2FBF71"/></svg>
             </div>
-            <span className="text-sm font-medium text-navy-900">Path to Ownership</span>
+            <span className="text-sm font-display font-semibold" style={{color:NAVY}}>MyScoreNova</span>
           </div>
-          <p className="text-xs text-navy-800/40">© 2025 Path to Ownership. AI Credit & Class Management Platform.</p>
+          <p className="text-xs" style={{color:'#6B7280'}}>© 2025 MyScoreNova by Tina Patton Consulting. AI Credit & Class Management.</p>
         </div>
       </footer>
     </div>
