@@ -25,7 +25,7 @@ export default function SignupPage() {
     if (form.password.length<6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     try { 
-      signup(form.name,form.email,form.password)
+      await signup(form.name,form.email,form.password)
       navigate('/dashboard') 
     }
     catch (err) { setError(err.message) }

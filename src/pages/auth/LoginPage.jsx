@@ -16,7 +16,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(''); setLoading(true)
     try { 
-      const user = login(form.email, form.password)
+      const user = await login(form.email, form.password)
       navigate(user.role==='admin'?'/admin':'/dashboard') 
     }
     catch (err) { setError(err.message) }

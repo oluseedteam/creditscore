@@ -63,12 +63,12 @@ export default function CreditScorePage() {
     change: h.score - history[i].score,
   }))
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const num = parseInt(score)
     if (!num||num<300||num>850) { setError('Enter a score between 300 and 850.'); return }
     setError('')
-    addCreditEntry(num, note)
+    await addCreditEntry(num, note)
     setScore(''); setNote('')
     setSuccess(true); setTimeout(()=>setSuccess(false),3000)
   }

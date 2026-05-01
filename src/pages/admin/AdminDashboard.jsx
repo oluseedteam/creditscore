@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, CheckCircle, AlertTriangle, XCircle, Users, TrendingUp, Award, Activity } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
@@ -32,8 +32,11 @@ export default function AdminDashboard() {
   const { getAllUsers } = useAuth()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
+  const [users, setUsers] = useState([])
 
-  const users = getAllUsers()
+  useEffect(() => {
+    getAllUsers().then(data => setUsers(data || []))
+  }, [])
 
   const enriched = useMemo(() => users.map(u => {
     const latest = u.creditHistory?.[u.creditHistory.length - 1]

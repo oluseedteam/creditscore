@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, CheckCircle, AlertTriangle, XCircle, TrendingUp, BookOpen, Calendar, BarChart3 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, BarChart, Bar, Cell, AreaChart, Area } from 'recharts'
 import { useAuth, getStatusFromScore } from '../../context/AuthContext'
@@ -10,8 +11,18 @@ const NAVY='#102A43', PGREEN='#2FBF71', GOLD='#F4B000', CORAL='#F56A6A', TEAL='#
 export default function AdminParticipantDetail() {
   const { id } = useParams()
   const { getAllUsers } = useAuth()
-  const users = getAllUsers()
-  const user = users.find(u => u.id === id)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getAllUsers().then(users => {
+      const u = (users || []).find(u => String(u.id) === String(id))
+      setUser(u)
+      setLoading(false)
+    })
+  }, [id, getAllUsers])
+
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading profile...</div>
 
   if (!user) return (
     <div className="p-10 text-center">
@@ -19,6 +30,7 @@ export default function AdminParticipantDetail() {
       <Link to="/admin" className="btn-secondary mt-4 inline-flex">← Back to dashboard</Link>
     </div>
   )
+
 
   const history = user.creditHistory || []
   const latest = history[history.length - 1]

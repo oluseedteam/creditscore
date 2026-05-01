@@ -7,8 +7,10 @@ import DashboardPage from './pages/participant/DashboardPage'
 import CreditScorePage from './pages/participant/CreditScorePage'
 import ClassProgressPage from './pages/participant/ClassProgressPage'
 import LoanGatewayPage from './pages/participant/LoanGatewayPage'
+import QuizTestPage from './pages/participant/QuizTestPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminParticipantDetail from './pages/admin/AdminParticipantDetail'
+import AdminCBTPage from './pages/admin/AdminCBTPage'
 import ParticipantLayout from './components/layout/ParticipantLayout'
 import AdminLayout from './components/layout/AdminLayout'
 
@@ -34,11 +36,13 @@ export default function App() {
             <Route path="credit-score"   element={<CreditScorePage />} />
             <Route path="class-progress" element={<ClassProgressPage />} />
             <Route path="loan-gateway"   element={<LoanGatewayPage />} />
+            <Route path="quiz"           element={<QuizTestPage />} />
           </Route>
 
           <Route path="/admin" element={<PrivateRoute requiredRole="admin"><AdminLayout /></PrivateRoute>}>
             <Route index element={<AdminDashboard />} />
             <Route path="participant/:id" element={<AdminParticipantDetail />} />
+            <Route path="cbt" element={<AdminCBTPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, LogOut, Shield, Menu, X } from 'lucide-react'
+import { LayoutDashboard, LogOut, Shield, Menu, X, FileText } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useState } from 'react'
 
@@ -39,6 +39,11 @@ export default function AdminLayout() {
               ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
               :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
               <LayoutDashboard size={18}/> All participants
+            </NavLink>
+            <NavLink to="/admin/cbt" style={({isActive})=>isActive
+              ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
+              :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
+              <FileText size={18}/> Manage CBT
             </NavLink>
           </nav>
         </div>
@@ -84,6 +89,11 @@ export default function AdminLayout() {
                   ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
                   :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
                   <LayoutDashboard size={18}/> All participants
+                </NavLink>
+                <NavLink to="/admin/cbt" onClick={() => setMobileMenuOpen(false)} style={({isActive})=>isActive
+                  ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
+                  :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
+                  <FileText size={18}/> Manage CBT
                 </NavLink>
               </nav>
             </div>

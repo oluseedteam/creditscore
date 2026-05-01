@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, TrendingUp, BookOpen, Key, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, BookOpen, Key, LogOut, Menu, X, HelpCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -9,6 +9,7 @@ const nav = [
   { to:'/credit-score',   icon:TrendingUp,      label:'Credit Score' },
   { to:'/class-progress', icon:BookOpen,        label:'Class Progress' },
   { to:'/loan-gateway',   icon:Key,             label:'Loan Gateway' },
+  { to:'/quiz',           icon:HelpCircle,      label:'CBT Test' },
 ]
 
 function Logo() {
