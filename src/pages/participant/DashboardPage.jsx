@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
-import { TrendingUp, BookOpen, Key, ArrowRight, CheckCircle, AlertTriangle, XCircle, Zap } from 'lucide-react'
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, RadialBarChart, RadialBar } from 'recharts'
+import { TrendingUp, BookOpen, Key, ArrowRight, CheckCircle, AlertTriangle, XCircle, Activity } from 'lucide-react'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar } from 'recharts'
 import { useAuth, getStatusFromScore } from '../../context/AuthContext'
 import { format } from 'date-fns'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 const TEAL='#066A6F', NAVY='#102A43', PGREEN='#2FBF71', GOLD='#F4B000', CORAL='#F56A6A'
 
@@ -13,14 +15,39 @@ function StatusIcon({ color }) {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, api } = useAuth()
+  const [curriculum, setCurriculum] = useState([])
+  const [cbtResults, setCbtResults] = useState([])
+
+  useEffect(() => {
+    const fetchCV = async () => {
+      try {
+        const res = await api.get('/curriculum-frameworks')
+        setCurriculum(res.data)
+      } catch { /* ignore */ }
+    }
+    const fetchResults = async () => {
+      try {
+        const res = await api.get('/cbt-results/me')
+        setCbtResults(res.data)
+      } catch { /* ignore */ }
+    }
+    fetchCV()
+    fetchResults()
+  }, [api])
+
   const history = user?.creditHistory || []
   const latest  = history[history.length-1]
   const prev    = history[history.length-2]
   const status  = latest ? getStatusFromScore(latest.score) : null
   const delta   = latest&&prev ? latest.score-prev.score : null
   const pct     = latest ? Math.round(((latest.score-300)/550)*100) : 0
-  const attPct  = user?.attendance?.total>0 ? Math.round((user.attendance.attended/user.attendance.total)*100) : 0
+  
+  const totalClasses = curriculum.length || 8
+  const attendedScore = user?.attendance?.attended || 0
+  const attPct = Math.round((attendedScore/totalClasses)*100) || 0
+  const attText = `${attendedScore}/${totalClasses} classes`
+
   const barColor= status?.color==='green'?PGREEN:status?.color==='yellow'?GOLD:CORAL
 
   const chartData = history.map(h=>({
@@ -30,19 +57,19 @@ export default function DashboardPage() {
 
   const radialData = [{ value: pct, fill: barColor }]
 
-  const CustomTip = ({active,payload,label})=>{
-    if(!active||!payload?.length) return null
-    return <div className="card px-3 py-2 text-xs shadow-lg"><p style={{color:'#6B7280'}}>{label}</p><p className="font-bold" style={{color:barColor}}>{payload[0].value}</p></div>
-  }
-
   return (
-    <div className="p-6 lg:p-10 max-w-5xl">
+    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{duration:0.5}} className="p-6 lg:p-10 max-w-5xl print:p-0">
       {/* Greeting */}
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>
-          Good day, {user?.name?.split(' ')[0]} 👋
-        </h1>
-        <p style={{color:'#6B7280'}}>Here's your homeownership progress at a glance.</p>
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4 print:mb-0">
+        <div>
+          <h1 className="font-display text-4xl font-black mb-2 tracking-tight" style={{color:NAVY}}>
+            Howdy, {user?.name?.split(' ')[0]} 👋
+          </h1>
+          <p className="font-medium opacity-60" style={{color:NAVY}}>Here's your real-time homeownership progress and cohort analysis.</p>
+        </div>
+        <button onClick={() => window.print()} className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all print:hidden">
+          <Activity size={18} className="text-teal-600" /> Export Full Analysis
+        </button>
       </div>
 
       {/* Top row: Score hero + Radial */}
@@ -116,7 +143,10 @@ export default function DashboardPage() {
               </defs>
               <XAxis dataKey="month" tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
               <YAxis domain={[300,850]} tick={{fontSize:11,fill:'#6B7280'}} axisLine={false} tickLine={false}/>
-              <Tooltip content={<CustomTip/>}/>
+              <Tooltip content={({active,payload,label}) => {
+                if(!active||!payload?.length) return null
+                return <div className="card px-3 py-2 text-xs shadow-lg"><p style={{color:'#6B7280'}}>{label}</p><p className="font-bold" style={{color:barColor}}>{payload[0].value}</p></div>
+              }}/>
               <Area type="monotone" dataKey="score" stroke={barColor} strokeWidth={2.5} fill="url(#dashGrad)"
                 dot={{r:4,fill:barColor,strokeWidth:0}} activeDot={{r:6}}/>
             </AreaChart>
@@ -124,11 +154,52 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* CBT Performance Section */}
+      <div className="mb-8">
+        <h2 className="font-display text-lg font-semibold mb-4" style={{color:NAVY}}>CBT Performance</h2>
+        <div className="card overflow-hidden">
+          <div className="divide-y" style={{borderColor:'#F1F5F9'}}>
+            {cbtResults.length > 0 ? (
+              cbtResults.map((res, i) => {
+                const pct = Math.round((res.score / res.total_questions) * 100)
+                return (
+                  <div key={i} className="p-4 hover:bg-gray-50/50 transition-colors flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background:`${TEAL}10`}}>
+                        <Activity size={18} style={{color:TEAL}} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold" style={{color:NAVY}}>{res.test?.subject}</p>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">{format(new Date(res.created_at), 'PPP')}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">Score</p>
+                        <p className="text-xl font-black" style={{color: pct >= 50 ? PGREEN : CORAL}}>{pct}%</p>
+                      </div>
+                      <Link to="/cbt" className="p-2 rounded-lg bg-gray-100 text-gray-400 hover:bg-navy-900 hover:text-white transition-all print:hidden">
+                         <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="p-8 text-center">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">No test results synchronized</p>
+                <p className="text-[10px] text-gray-400">Complete a CBT test to see your performance here.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label:'Score entries',  value:history.length,  sub:'months tracked' },
-          { label:'Attendance',     value:`${attPct}%`,    sub:`${user?.attendance?.attended}/${user?.attendance?.total} classes` },
+          { label:'Attendance',     value:`${attPct}%`,    sub:attText },
           { label:'Total gain',     value:history.length>=2?`${latest.score-history[0].score>0?'+':''}${latest.score-history[0].score}`:'—', sub:'since start' },
           { label:'Loan status',    value:status?.color==='green'?'🔓':'🔒', sub:status?.color==='green'?'Unlocked':'Keep improving' },
         ].map((s,i)=>(
@@ -147,19 +218,19 @@ export default function DashboardPage() {
           {to:'/credit-score',   icon:TrendingUp, label:'Update credit score',  desc:'Add your monthly score', accent:PGREEN},
           {to:'/class-progress', icon:BookOpen,   label:'Class progress',       desc:`${attPct}% attendance`,  accent:TEAL},
           {to:'/loan-gateway',   icon:Key,        label:'Loan gateway',         desc:status?.color==='green'?'Unlocked!':'Reach 670+ to unlock', accent:status?.color==='green'?PGREEN:GOLD},
-        ].map(({to,icon:Icon,label,desc,accent})=>(
-          <Link key={to} to={to} className="card-hover p-5 flex items-center gap-4 group">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-opacity" style={{background:`${accent}18`}}>
-              <Icon size={18} style={{color:accent}}/>
+        ].map((item)=>(
+          <Link key={item.to} to={item.to} className="card-hover p-5 flex items-center gap-4 group">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-opacity" style={{background:`${item.accent}18`}}>
+              <item.icon size={18} style={{color:item.accent}}/>
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-sm" style={{color:NAVY}}>{label}</p>
-              <p className="text-xs" style={{color:'#6B7280'}}>{desc}</p>
+              <p className="font-medium text-sm" style={{color:NAVY}}>{item.label}</p>
+              <p className="text-xs" style={{color:'#6B7280'}}>{item.desc}</p>
             </div>
             <ArrowRight size={15} className="ml-auto shrink-0 transition-all group-hover:translate-x-0.5" style={{color:'#E3E6EC'}}/>
           </Link>
         ))}
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell, AreaChart, Area } from 'recharts'
-import { CheckCircle, AlertTriangle, XCircle, TrendingUp, Zap } from 'lucide-react'
+import { CheckCircle, AlertTriangle, XCircle, TrendingUp, Zap, Edit2, Trash2, Save, X } from 'lucide-react'
 import { useAuth, getStatusFromScore } from '../../context/AuthContext'
+import { useDialog } from '../../context/DialogContext'
 import { format } from 'date-fns'
+import { AnimatePresence, motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 const TEAL='#066A6F', NAVY='#102A43', PGREEN='#2FBF71', GOLD='#F4B000', CORAL='#F56A6A'
 
@@ -37,12 +40,76 @@ const CustomTip = ({active,payload,label})=>{
   return <div className="card px-3 py-2 text-xs shadow-lg"><p style={{color:'#6B7280'}}>{label}</p><p className="font-bold text-sm" style={{color:c}}>{s}</p></div>
 }
 
+function ScoreRow({ entry, index, updateCreditEntry, deleteCreditEntry }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editScore, setEditScore] = useState(entry.score)
+  const [editNote, setEditNote] = useState(entry.note || '')
+  const { showDialog } = useDialog()
+
+  const handleSave = async () => {
+    const tid = toast.loading('Updating score...')
+    try {
+      await updateCreditEntry(entry.id, parseInt(editScore), editNote)
+      setIsEditing(false)
+      toast.success('Score updated', { id: tid })
+    } catch {
+      toast.error('Failed to update score', { id: tid })
+    }
+  }
+
+  const handleDelete = async () => {
+    const ok = await showDialog({
+      title: 'Delete Record?',
+      message: 'Are you sure you want to delete this score record? This action cannot be undone.',
+      type: 'confirm'
+    })
+    if (!ok) return
+    const tid = toast.loading('Deleting record...')
+    try {
+      await deleteCreditEntry(entry.id)
+      toast.success('Score record deleted', { id: tid })
+    } catch {
+      toast.error('Failed to delete score', { id: tid })
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex flex-col md:flex-row md:items-center justify-between p-5 gap-4 bg-teal-50/30">
+        <div className="flex-1 flex gap-3">
+          <input type="number" value={editScore} onChange={e=>setEditScore(e.target.value)} className="w-24 px-3 py-2 border-none ring-1 ring-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20"/>
+          <input type="text" value={editNote} onChange={e=>setEditNote(e.target.value)} className="flex-1 px-3 py-2 border-none ring-1 ring-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20" placeholder="Update note..."/>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={handleSave} className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-teal-900/20"><Save size={14}/>Save</button>
+          <button onClick={()=>setIsEditing(false)} className="px-4 py-2 text-xs font-bold text-gray-500 hover:bg-white rounded-xl transition-colors">Cancel</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 transition-all hover:bg-gray-50 gap-4" style={{background:index%2===0?'white':'#FAFAF8'}}>
+      <div>
+        <p className="text-sm font-bold mb-1" style={{color:NAVY}}>{format(new Date(entry.month+'-01'),'MMMM yyyy')}</p>
+        {entry.note&&<p className="text-xs opacity-70" style={{color:'#6B7280'}}>{entry.note}</p>}
+      </div>
+      <div className="flex items-center gap-4">
+        <StatusBadge score={entry.score}/>
+        <span className="font-display font-black text-lg" style={{color:NAVY}}>{entry.score}</span>
+        <div className="flex items-center gap-1 border-l pl-4 border-gray-100">
+          <button onClick={() => setIsEditing(true)} className="p-2 text-gray-300 hover:text-teal-600 transition-colors"><Edit2 size={16}/></button>
+          <button onClick={handleDelete} className="p-2 text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CreditScorePage() {
-  const {user,addCreditEntry} = useAuth()
+  const {user,addCreditEntry,updateCreditEntry,deleteCreditEntry} = useAuth()
   const [score,setScore]   = useState('')
   const [note,setNote]     = useState('')
-  const [success,setSuccess] = useState(false)
-  const [error,setError]   = useState('')
 
   const history = user?.creditHistory || []
   const latest  = history[history.length-1]
@@ -66,45 +133,61 @@ export default function CreditScorePage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const num = parseInt(score)
-    if (!num||num<300||num>850) { setError('Enter a score between 300 and 850.'); return }
-    setError('')
-    await addCreditEntry(num, note)
-    setScore(''); setNote('')
-    setSuccess(true); setTimeout(()=>setSuccess(false),3000)
+    if (!num||num<300||num>850) { 
+      toast.error('Enter a score between 300 and 850.'); 
+      return 
+    }
+    
+    const tid = toast.loading('Publishing score...')
+    try {
+      await addCreditEntry(num, note)
+      setScore(''); setNote('')
+      toast.success('Score saved successfully!', { id: tid })
+    } catch {
+      toast.error('Failed to save score', { id: tid })
+    }
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>Credit Score</h1>
-        <p style={{color:'#6B7280'}}>Track your monthly progress and access strategic coaching insights.</p>
+    <motion.div initial={{opacity:0, x:-20}} animate={{opacity:1, x:0}} transition={{duration:0.5}} className="p-6 lg:p-10 max-w-5xl print:p-0">
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4 print:mb-0">
+        <div>
+          <h1 className="font-display text-4xl font-bold mb-2 tracking-tight" style={{color:NAVY}}>Credit Score</h1>
+          <p className="font-medium opacity-60" style={{color:NAVY}}>Track your monthly progress and access strategic coaching insights.</p>
+        </div>
+        <button onClick={() => window.print()} className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all print:hidden">
+          <TrendingUp size={18} className="text-teal-600" /> Download/Print Report
+        </button>
       </div>
 
       {/* Entry + current standing */}
-      <div className="grid lg:grid-cols-5 gap-6 mb-8">
-        <div className="lg:col-span-2">
-          <div className="card p-6">
-            <h2 className="font-display font-semibold mb-0.5" style={{color:NAVY}}>{alreadySubmitted?'Update this month':'Add monthly score'}</h2>
-            <p className="text-xs mb-5" style={{color:'#6B7280'}}>{format(new Date(),'MMMM yyyy')} · {alreadySubmitted?'Already submitted — update it':'Not yet submitted'}</p>
-            {success&&<div className="flex items-center gap-2 p-3 rounded-xl text-sm mb-4" style={{background:'#e8faf0',border:'1px solid #88e6b2',color:PGREEN}}><CheckCircle size={15}/>Score saved!</div>}
-            {error&&<div className="p-3 rounded-xl text-sm mb-4" style={{background:'#fef0f0',border:'1px solid #faaeae',color:CORAL}}>{error}</div>}
-            <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid lg:grid-cols-5 gap-8 mb-10">
+        <div className="lg:col-span-2 print:hidden">
+          <div className="card p-6 border-t-4" style={{borderTopColor: TEAL}}>
+            <h2 className="font-display text-lg font-bold mb-1" style={{color:NAVY}}>{alreadySubmitted?'Update this month':'Add monthly score'}</h2>
+            <p className="text-xs mb-6 opacity-60 font-medium" style={{color:NAVY}}>{format(new Date(),'MMMM yyyy')} · {alreadySubmitted?'Already submitted':'Not yet submitted'}</p>
+            
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="label">Credit score (300–850)</label>
-                <input type="number" min="300" max="850" className="input-field font-mono text-2xl" placeholder="e.g. 640"
+                <label className="block text-[10px] uppercase font-black tracking-widest text-gray-400 mb-2">Credit score (300–850)</label>
+                <input type="number" min="300" max="850" className="w-full px-5 py-3 bg-gray-50 border-none rounded-2xl font-mono text-3xl focus:ring-4 focus:ring-teal-500/10 placeholder:text-gray-200" placeholder="..."
                   value={score} onChange={e=>setScore(e.target.value)} required/>
               </div>
               <div>
-                <label className="label">Note (optional)</label>
-                <input type="text" className="input-field text-sm" placeholder="What changed this month?"
-                  value={note} onChange={e=>setNote(e.target.value)}/>
+                <label className="block text-[10px] uppercase font-black tracking-widest text-gray-400 mb-2">Note (optional)</label>
+                <textarea className="w-full px-5 py-3 bg-gray-50 border-none rounded-2xl text-sm focus:ring-4 focus:ring-teal-500/10" placeholder="What changed since last month?"
+                  value={note} onChange={e=>setNote(e.target.value)} rows="2"></textarea>
               </div>
-              <button type="submit" className="btn-primary w-full justify-center"><TrendingUp size={16}/>Save score</button>
+              <button type="submit" className="btn-primary w-full justify-center h-14 text-lg font-bold shadow-xl shadow-teal-900/10"><TrendingUp size={20}/>Save score</button>
             </form>
-            <div className="mt-5 space-y-2">
+
+            <div className="mt-8 pt-6 border-t border-gray-50 space-y-2">
+              <label className="block text-[10px] uppercase font-black tracking-widest text-gray-400 mb-3">Score Thresholds</label>
               {[[CORAL,'Bad','300–579'],[GOLD,'Low','580–669'],[PGREEN,'Good','670–850']].map(([c,l,r])=>(
-                <div key={l} className="flex items-center gap-2 text-xs" style={{color:'#6B7280'}}>
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{background:c}}/>{l} ({r})
+                <div key={l} className="flex items-center gap-3 text-xs font-bold" style={{color:NAVY}}>
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{background:c}}/>
+                  <span className="opacity-50 w-8">{l}</span>
+                  <span className="opacity-30">{r}</span>
                 </div>
               ))}
             </div>
@@ -200,16 +283,7 @@ export default function CreditScorePage() {
           </div>
           <div className="divide-y" style={{borderColor:'#F9F5EF'}}>
             {[...history].reverse().map((entry,i)=>(
-              <div key={i} className="flex items-center justify-between p-4 transition-colors hover:opacity-90" style={{background:i%2===0?'white':'#FAFAF8'}}>
-                <div>
-                  <p className="text-sm font-medium" style={{color:NAVY}}>{format(new Date(entry.month+'-01'),'MMMM yyyy')}</p>
-                  {entry.note&&<p className="text-xs" style={{color:'#6B7280'}}>{entry.note}</p>}
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge score={entry.score}/>
-                  <span className="font-mono font-medium" style={{color:NAVY}}>{entry.score}</span>
-                </div>
-              </div>
+              <ScoreRow key={entry.id || i} entry={entry} index={i} updateCreditEntry={updateCreditEntry} deleteCreditEntry={deleteCreditEntry} />
             ))}
           </div>
         </div>
@@ -240,6 +314,6 @@ export default function CreditScorePage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

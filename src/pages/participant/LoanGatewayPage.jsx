@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Lock, Unlock, Phone, ShieldCheck, Zap, UserCheck, BarChart3, ArrowRight, MessageSquare, TrendingUp } from 'lucide-react'
+import { Lock, Unlock, Phone, ShieldCheck, Zap, UserCheck, BarChart3, ArrowRight, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react'
 import { useAuth, getStatusFromScore } from '../../context/AuthContext'
+import { useDialog } from '../../context/DialogContext'
+import { motion } from 'framer-motion'
 
 // Color Constants
-const NAVY = '#102A43', PGREEN = '#2FBF71', GOLD = '#F4B000', CORAL = '#F56A6A', TEAL = '#066A6F'
+const NAVY = '#102A43', PGREEN = '#2FBF71', GOLD = '#F4B000', TEAL = '#066A6F'
 
 const loanOfficers = [
   { name: 'Patricia Owens', title: 'Senior Loan Officer', specialty: 'FHA & First-time buyers', initials: 'PO', available: true },
@@ -20,6 +23,15 @@ const loanTypes = [
 
 export default function LoanGatewayPage() {
   const { user } = useAuth()
+  const { showDialog } = useDialog()
+  const [message, setMessage] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  
+  const handleInquiry = () => {
+    setSubmitted(true)
+    setMessage('')
+  }
+
   const history = user?.creditHistory || []
   const latest = history[history.length - 1]
   const status = latest ? getStatusFromScore(latest.score) : null
@@ -28,7 +40,7 @@ export default function LoanGatewayPage() {
   const pct = latest ? Math.round(((latest.score - 300) / 550) * 100) : 0
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-10">
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.6}} className="p-6 lg:p-10 max-w-6xl mx-auto space-y-10">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -75,7 +87,16 @@ export default function LoanGatewayPage() {
                 <p className="text-sm font-medium leading-relaxed max-w-md mb-8" style={{ color: '#6B7280' }}>
                   Your score of <span className="font-bold underline" style={{ color: PGREEN }}>{latest?.score}</span> has met the primary lender threshold. Senior loan officers are now available for direct consultation.
                 </p>
-                <button className="btn-primary !px-8 !py-3 flex items-center gap-3 shadow-lg" style={{ background: TEAL }}>
+                <button 
+                  onClick={() => showDialog({ 
+                    title: 'System Protocol', 
+                    message: 'Initiating secure pre-approval sequence. Our underwriters will review your verified position.', 
+                    type: 'confirm',
+                    confirmLabel: 'Proceed'
+                  })} 
+                  className="btn-primary px-8! py-3! flex items-center gap-3 shadow-lg" 
+                  style={{ background: TEAL }}
+                >
                   <UserCheck size={18} /> <span className="uppercase tracking-widest font-bold text-xs">Begin Pre-Approval</span>
                 </button>
               </div>
@@ -84,7 +105,7 @@ export default function LoanGatewayPage() {
                 <span className="text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block text-white" style={{ background: GOLD }}>Phase 01: Qualification</span>
                 <h2 className="font-display text-4xl font-bold mb-4 italic text-white">Elevate Your Position.</h2>
                 <p className="text-sm font-medium leading-relaxed max-w-md mb-6 text-white/60">
-                  The gateway unlocks at <span className="text-white font-bold underline">670 points</span>. You are <span className="font-bold" style={{ color: GOLD }}>{pointsNeeded} pts</span> away from direct lender access.
+                   The gateway unlocks at <span className="text-white font-bold underline">670 points</span>. You are <span className="font-bold" style={{ color: GOLD }}>{pointsNeeded} pts</span> away from direct lender access.
                 </p>
                 <div className="space-y-3 max-w-sm mb-8">
                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -95,7 +116,7 @@ export default function LoanGatewayPage() {
                     <span>Target: 670</span>
                   </div>
                 </div>
-                <Link to="/credit-score" className="btn-primary !bg-white !text-navy-900 inline-flex items-center gap-3 hover:scale-105 transition-transform" style={{ color: NAVY }}>
+                <Link to="/credit-score" className="btn-primary bg-white! text-navy-900! inline-flex items-center gap-3 hover:scale-105 transition-transform" style={{ color: NAVY }}>
                   <TrendingUp size={18} /> <span className="uppercase tracking-widest font-bold text-xs">Boost Score Now</span> <ArrowRight size={18} />
                 </Link>
               </div>
@@ -109,8 +130,8 @@ export default function LoanGatewayPage() {
           {/* Partner Grid */}
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <Zap size={24} style={{ color: GOLD }} fill={GOLD} />
-              <h2 className="font-display text-2xl font-bold italic" style={{ color: NAVY }}>Preferred Lending Partners</h2>
+               <Zap size={24} style={{ color: GOLD }} fill={GOLD} />
+               <h2 className="font-display text-2xl font-bold italic" style={{ color: NAVY }}>Preferred Lending Partners</h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {loanOfficers.map((officer, i) => (
@@ -127,7 +148,7 @@ export default function LoanGatewayPage() {
                     <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: TEAL }}>Specialty</p>
                     <p className="text-xs font-bold" style={{ color: NAVY }}>{officer.specialty}</p>
                   </div>
-                  <button className="btn-primary w-full !py-3 flex justify-center items-center gap-2" style={{ background: TEAL }}>
+                  <button onClick={() => showDialog({ title: 'Secure Call', message: `Secured Call initiated with ${officer.name}. Please stay by your phone.`, type: 'alert' })} className="btn-primary w-full py-3! flex justify-center items-center gap-2" style={{ background: TEAL }}>
                     <Phone size={14} strokeWidth={3} /> <span className="uppercase tracking-widest font-bold text-[10px]">Secure Call</span>
                   </button>
                 </div>
@@ -158,11 +179,29 @@ export default function LoanGatewayPage() {
              <MessageSquare className="absolute -bottom-10 -right-10 text-white/5" size={240} />
              <div className="max-w-xl relative z-10">
                 <h3 className="font-display text-3xl font-bold mb-3 italic tracking-tighter uppercase">Direct Concierge</h3>
-                <p className="text-sm text-white/60 mb-6 font-medium">Have a specific question about grants or rural assistance? Submit an inquiry directly to our partner queue.</p>
-                <div className="space-y-4">
-                   <textarea className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-teal-400" rows={3} placeholder="Message..." />
-                   <button className="px-10 py-3 rounded-lg font-bold uppercase tracking-widest text-xs shadow-xl transition-all hover:brightness-110" style={{ background: PGREEN }}>Submit Case</button>
-                </div>
+                {submitted ? (
+                  <div className="py-6 px-4 bg-white/10 rounded-xl border border-teal-500/30 flex items-center gap-4">
+                    <CheckCircle className="text-teal-400" size={32} />
+                    <div>
+                      <p className="font-bold text-lg text-teal-400">Inquiry Received</p>
+                      <p className="text-sm text-white/70">A partner will contact you shortly.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-white/60 mb-6 font-medium">Have a specific question about grants or rural assistance? Submit an inquiry directly to our partner queue.</p>
+                    <div className="space-y-4">
+                       <textarea 
+                         value={message} 
+                         onChange={e=>setMessage(e.target.value)} 
+                         className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-teal-400 transition-colors" 
+                         rows={3} 
+                         placeholder="Message..." 
+                       />
+                       <button onClick={handleInquiry} disabled={!message} className="px-10 py-3 rounded-lg font-bold uppercase tracking-widest text-xs shadow-xl transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: PGREEN }}>Submit Case</button>
+                    </div>
+                  </>
+                )}
              </div>
           </div>
         </div>
@@ -195,6 +234,6 @@ export default function LoanGatewayPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

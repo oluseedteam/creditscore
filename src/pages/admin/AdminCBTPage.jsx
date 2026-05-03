@@ -1,48 +1,96 @@
-import { useState } from 'react'
-import { PlusCircle, Upload, Save, Trash2, Clock, BookOpen, CheckCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { PlusCircle, Upload, Save, Trash2, Clock, BookOpen } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useDialog } from '../../context/DialogContext'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 // Theme Constants
 const NAVY = '#102A43'
 const TEAL = '#066A6F'
 const PGREEN = '#2FBF71'
-const CORAL = '#F56A6A'
 
 export default function AdminCBTPage() {
   const { api } = useAuth()
+  const { showDialog } = useDialog()
   const [subject, setSubject] = useState('')
   const [timeLapse, setTimeLapse] = useState(30)
   const [questions, setQuestions] = useState([])
+  const [cbtTests, setCbtTests] = useState([])
   const [currentQ, setCurrentQ] = useState({
     text: '',
     options: { A: '', B: '', C: '', D: '' },
     correctAnswer: 'A'
   })
 
+  const fetchCBTs = async () => {
+    try {
+      const res = await api.get('/cbt-tests')
+      setCbtTests(res.data)
+    } catch {
+      toast.error('Failed to fetch tests')
+    }
+  }
+
+  useEffect(() => {
+    fetchCBTs()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // using useEffect for initial fetch
+
   const addQuestion = () => {
-    if (!currentQ.text || !currentQ.options.A || !currentQ.options.B) return
+    if (!currentQ.text || !currentQ.options.A || !currentQ.options.B) {
+      toast.error('Please fill in the question and at least two options.')
+      return
+    }
     setQuestions([...questions, { ...currentQ, id: Date.now() }])
     setCurrentQ({ text: '', options: { A: '', B: '', C: '', D: '' }, correctAnswer: 'A' })
+    toast.success('Question added to draft.')
   }
 
   const removeQuestion = (id) => {
     setQuestions(questions.filter(q => q.id !== id))
+    toast.success('Question removed from draft.')
   }
 
   const saveCBT = async () => {
+    const loadId = toast.loading('Saving CBT...')
     try {
       const cbtData = { subject, timeLapsMinutes: timeLapse, questions }
       await api.post('/cbt-tests', cbtData)
-      alert('CBT Questions configured and saved to API successfully!')
+      toast.success('CBT Questions configured and saved successfully!', { id: loadId })
       setSubject('')
       setQuestions([])
+      fetchCBTs()
     } catch {
-      alert('Error saving CBT Test')
+      toast.error('Error saving CBT Test', { id: loadId })
     }
   }
 
+  const deleteCBT = async (e, id) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    showDialog({
+      title: 'Delete CBT Test',
+      message: 'Are you sure you want to delete this CBT test? This will also remove all associated questions and cannot be undone.',
+      confirmLabel: 'Delete Permanently',
+      type: 'danger',
+      onConfirm: async () => {
+        const loadId = toast.loading('Deleting subject...')
+        try {
+          await api.delete(`/cbt-tests/${id}`)
+          toast.success('CBT test deleted successfully.', { id: loadId })
+          fetchCBTs()
+        } catch {
+          toast.error('Error deleting CBT test. Is it linked to a curriculum?', { id: loadId })
+        }
+      }
+    })
+  }
+
   return (
-    <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
+    <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{duration:0.5}} className="p-6 lg:p-10 max-w-5xl mx-auto space-y-8">
       <div>
         <h1 className="font-display text-4xl font-bold tracking-tight mb-2" style={{color: NAVY}}>CBT Configuration</h1>
         <p className="font-medium opacity-60" style={{color: NAVY}}>Upload questions and set test parameters for participants.</p>
@@ -108,13 +156,13 @@ export default function AdminCBTPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-2">Correct Answer</label>
+                <label className="block text-xs font-bold text-gray-500 mb-3">Correct Answer</label>
                 <div className="flex gap-4">
                   {['A', 'B', 'C', 'D'].map(opt => (
-                    <label key={opt} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="correct" value={opt} checked={currentQ.correctAnswer === opt}
-                        onChange={e => setCurrentQ({...currentQ, correctAnswer: e.target.value})} className="text-teal-600 focus:ring-teal-500" />
-                      <span className="text-sm font-medium">{opt}</span>
+                    <label key={opt} className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 cursor-pointer transition-all ${currentQ.correctAnswer === opt ? 'bg-teal-600 border-teal-600 text-white font-bold shadow-lg ring-4 ring-teal-500/20' : 'bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100'}`}>
+                      <input type="radio" value={opt} checked={currentQ.correctAnswer === opt}
+                        onChange={e => setCurrentQ({...currentQ, correctAnswer: e.target.value})} className="hidden" />
+                      <span className="text-sm">{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -131,7 +179,7 @@ export default function AdminCBTPage() {
 
           <div className="card p-6">
             <h3 className="font-bold text-lg mb-4 flex justify-between items-center" style={{color: NAVY}}>
-              Question Pool
+              Question Pool (Draft)
               <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{questions.length} Questions</span>
             </h3>
             <div className="space-y-3">
@@ -161,8 +209,38 @@ export default function AdminCBTPage() {
               )}
             </div>
           </div>
+          
+          <div className="card p-6 mt-6">
+            <h3 className="font-bold text-lg mb-4 flex justify-between items-center" style={{color: NAVY}}>
+              Uploaded Subjects
+              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{cbtTests.length} Subjects</span>
+            </h3>
+            <div className="space-y-3">
+              {cbtTests.length === 0 ? (
+                <div className="text-center py-10 opacity-50">
+                  <BookOpen size={32} className="mx-auto mb-3" />
+                  <p className="text-sm font-medium">No subjects uploaded yet.</p>
+                </div>
+              ) : (
+                cbtTests.map(test => (
+                  <Link key={test.id} to={`/admin/cbt/${test.id}`} className="block p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100 transition-colors">
+                    <div className="flex justify-between items-center">
+                      <p className="font-bold text-sm" style={{color: NAVY}}>{test.subject}</p>
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-semibold text-gray-500">{test.timeLapsMinutes} mins</span>
+                        <button onClick={(e) => deleteCBT(e, test.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

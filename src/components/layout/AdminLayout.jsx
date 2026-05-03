@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, LogOut, Shield, Menu, X, FileText } from 'lucide-react'
+import { LayoutDashboard, LogOut, Shield, Menu, X, FileText, BarChart3 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useState } from 'react'
 
@@ -19,7 +19,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen" style={{background:'#F9F5EF'}}>
       {/* Desktop Sidebar */}
-      <aside className="w-60 min-h-screen p-6 hidden lg:flex flex-col justify-between" style={{background:NAVY}}>
+      <aside className="w-60 min-h-screen p-6 hidden lg:flex flex-col justify-between print:hidden" style={{background:NAVY}}>
         <div>
           <div className="flex items-center gap-3 mb-10">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{background:TEAL}}>
@@ -45,6 +45,16 @@ export default function AdminLayout() {
               :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
               <FileText size={18}/> Manage CBT
             </NavLink>
+            <NavLink to="/admin/curriculum" style={({isActive})=>isActive
+              ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
+              :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
+              <FileText size={18}/> Curriculum
+            </NavLink>
+            <NavLink to="/admin/results" style={({isActive})=>isActive
+              ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
+              :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
+              <BarChart3 size={18}/> Test Analytics
+            </NavLink>
           </nav>
         </div>
         <div>
@@ -64,7 +74,7 @@ export default function AdminLayout() {
       {/* Mobile Layout */}
       <div className="lg:hidden flex flex-col w-full">
         {/* Mobile Header - Fixed */}
-        <div className="flex items-center justify-between p-4 sticky top-0 z-40" style={{background:NAVY}}>
+        <div className="flex items-center justify-between p-4 sticky top-0 z-40 print:hidden" style={{background:NAVY}}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{background:TEAL}}>
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2L17 6.5V13.5L10 18L3 13.5V6.5L10 2Z" stroke="white" strokeWidth="1.5" fill="none"/><circle cx="10" cy="10" r="2.5" fill={PGREEN}/></svg>
@@ -95,6 +105,11 @@ export default function AdminLayout() {
                   :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
                   <FileText size={18}/> Manage CBT
                 </NavLink>
+                <NavLink to="/admin/curriculum" onClick={() => setMobileMenuOpen(false)} style={({isActive})=>isActive
+                  ?{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',background:'rgba(255,255,255,0.1)',color:'white'}
+                  :{display:'flex',alignItems:'center',gap:'12px',padding:'10px 12px',borderRadius:'12px',fontSize:'14px',fontWeight:'500',color:'rgba(255,255,255,0.5)'}}>
+                  <FileText size={18}/> Curriculum
+                </NavLink>
               </nav>
             </div>
             <div>
@@ -122,13 +137,13 @@ export default function AdminLayout() {
         )}
 
         {/* Mobile Main Content */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto print:pt-0">
           <Outlet/>
         </main>
       </div>
 
       {/* Desktop Main Content */}
-      <main className="hidden lg:flex flex-1 min-w-0"><Outlet/></main>
+      <main className="hidden lg:flex flex-1 min-w-0 print:block"><Outlet/></main>
     </div>
   )
 }

@@ -29,19 +29,17 @@ function Logo() {
   )
 }
 
-export default function ParticipantLayout() {
-  const { user, logout } = useAuth()
+function Sidebar({ mobile, user, logout, setMobileOpen }) {
   const navigate = useNavigate()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const handleLogout = () => { logout(); navigate('/') }
+  const handleLogout = () => { logout(); navigate('/'); if(setMobileOpen) setMobileOpen(false) }
 
-  const Sidebar = ({ mobile }) => (
-    <aside className={`flex flex-col justify-between bg-white border-r ${mobile?'w-64 h-full p-6':'w-64 min-h-screen p-6 hidden lg:flex'}`} style={{borderColor:'#E3E6EC'}}>
+  return (
+    <aside className={`flex flex-col justify-between bg-white border-r print:hidden ${mobile?'w-64 h-full p-6':'w-64 min-h-screen p-6 hidden lg:flex'}`} style={{borderColor:'#E3E6EC'}}>
       <div>
         <Logo/>
         <nav className="space-y-1">
           {nav.map(({to,icon:Icon,label})=>(
-            <NavLink key={to} to={to} onClick={()=>setMobileOpen(false)}
+            <NavLink key={to} to={to} onClick={()=>setMobileOpen && setMobileOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={({isActive})=>isActive
                 ?{background:'#e6f4f4',color:TEAL,border:'1px solid #b3dede'}
@@ -70,12 +68,18 @@ export default function ParticipantLayout() {
       </div>
     </aside>
   )
+}
+
+export default function ParticipantLayout() {
+  const { user, logout } = useAuth()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen" style={{background:'#F9F5EF'}}>
-      <Sidebar/>
+      <Sidebar user={user} logout={logout} />
+      
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b px-4 py-3 flex items-center justify-between" style={{borderColor:'#E3E6EC'}}>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b px-4 py-3 flex items-center justify-between print:hidden" style={{borderColor:'#E3E6EC'}}>
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:TEAL}}>
             <svg width="12" height="12" viewBox="0 0 20 20" fill="none"><path d="M10 2L17 6.5V13.5L10 18L3 13.5V6.5L10 2Z" stroke="white" strokeWidth="1.5" fill="none"/></svg>
@@ -86,13 +90,17 @@ export default function ParticipantLayout() {
           {mobileOpen?<X size={20}/>:<Menu size={20}/>}
         </button>
       </div>
+
       {mobileOpen&&(
-        <div className="lg:hidden fixed inset-0 z-30 flex" onClick={()=>setMobileOpen(false)}>
+        <div className="lg:hidden fixed inset-0 z-30 flex print:hidden" onClick={()=>setMobileOpen(false)}>
           <div className="flex-1" style={{background:'rgba(0,0,0,0.2)'}}/>
-          <div onClick={e=>e.stopPropagation()}><Sidebar mobile/></div>
+          <div onClick={e=>e.stopPropagation()}>
+            <Sidebar mobile user={user} logout={logout} setMobileOpen={setMobileOpen} />
+          </div>
         </div>
       )}
-      <main className="flex-1 min-w-0 lg:pt-0 pt-14"><Outlet/></main>
+
+      <main className="flex-1 min-w-0 lg:pt-0 pt-14 print:pt-0"><Outlet/></main>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { motion } from 'framer-motion'
 
 const TEAL='#066A6F', NAVY='#102A43', PGREEN='#2FBF71'
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
     : setForm({email:'alex@demo.com',password:'demo123'})
 
   return (
-    <div className="min-h-screen flex" style={{background:'#F9F5EF'}}>
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="min-h-screen flex" style={{background:'#F9F5EF'}}>
       {/* Left panel: Program Analytics & Branding */}
       <div className="hidden lg:flex flex-col justify-between w-5/12 p-12 relative overflow-hidden" style={{background:`linear-gradient(150deg,${TEAL} 0%,${NAVY} 100%)`}}>
         <div className="absolute inset-0 opacity-5" style={{backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")"}}/>
@@ -79,13 +80,11 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>Portal Access</h1>
+          <h1 className="font-display text-3xl font-bold mb-1" style={{color:NAVY}}>Participant Portal Access</h1>
           <p className="mb-8" style={{color:'#6B7280'}}>Sign in to access your program dashboard</p>
 
           <div className="flex gap-2 mb-6">
-            {[['participant','Participant Access'],['admin','Administrative Access']].map(([r,l])=>(
-              <button key={r} onClick={()=>fillDemo(r)} className="flex-1 text-[11px] py-2 px-3 rounded-lg border transition-colors hover:bg-gray-50" style={{borderColor:'#E3E6EC',color:'#6B7280',background:'white'}}>{l}</button>
-            ))}
+            <button onClick={()=>fillDemo('participant')} className="flex-1 text-[11px] py-2 px-3 rounded-lg border transition-colors hover:bg-gray-50 bg-teal-50 text-teal-800 font-bold" style={{borderColor:'#E3E6EC'}}>Fill Participant Demo</button>
           </div>
 
           {error && (
@@ -97,7 +96,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Registered Email</label>
-              <input type="email" required className="input-field" placeholder="email@address.com"
+              <input type="email" required className="input-field" placeholder="participant@example.com"
                 value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
             </div>
             <div>
@@ -125,6 +124,6 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

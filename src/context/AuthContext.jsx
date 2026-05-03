@@ -99,6 +99,24 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const updateCreditEntry = async (id, score, note = '') => {
+    try {
+      await api.put(`/credit-scores/${id}`, { score, note })
+      await refreshUser()
+    } catch {
+      console.error('Failed to update credit score')
+    }
+  }
+
+  const deleteCreditEntry = async (id) => {
+    try {
+      await api.delete(`/credit-scores/${id}`)
+      await refreshUser()
+    } catch {
+      console.error('Failed to delete credit score')
+    }
+  }
+
   const getAllUsers = async () => {
     try {
       const res = await api.get('/users')
@@ -118,7 +136,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, addCreditEntry, getAllUsers, refreshUser, api }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, addCreditEntry, updateCreditEntry, deleteCreditEntry, getAllUsers, refreshUser, api }}>
       {children}
     </AuthContext.Provider>
   )
